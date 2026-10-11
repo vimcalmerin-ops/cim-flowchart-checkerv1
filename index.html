@@ -1,0 +1,2135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+/* Website version: lets "Download my results (PDF)" save straight to the device when the page runs outside Claude. */
+(function(){ if(window.claude&&typeof window.claude.use==="function") return;
+  window.claude={use:function(name){ if(name!=="downloads") return Promise.resolve(null);
+    return Promise.resolve({save:function(o){ return new Promise(function(res){ var b=o.data instanceof Blob?o.data:new Blob([o.data],{type:(o.mimeType||"application/octet-stream")});
+      var u=URL.createObjectURL(b), a=document.createElement("a"); a.href=u; a.download=o.filename||"download"; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function(){ URL.revokeObjectURL(u); },4000); res({status:"saved"}); }); }}); }};
+})();
+</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CIM Flowchart Checker · S.Y. 2026–2027</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&display=swap" rel="stylesheet">
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --bg:#EEF1F4; --surface:#FFFFFF; --ink:#18212E; --muted:#5A6676; --line:#D3D9E1;
+  --accent:#0E5B3F; --accent-ink:#FFFFFF; --warn:#B3261E; --warn-bg:#FCE8E6; --ok:#0E5B3F; --ok-bg:#E3F2EA; --note-bg:#FFF6DA;
+  /* course-type colours, matched to the official flowchart legend */
+  --c-ge:#FFFFFF; --c-pe:#E8994F; --c-nstp:#E9BDB4; --c-inst:#7CB561; --c-core:#F7E45A;
+  --c-major:#7EA9EE; --c-prac:#BDB1DD; --c-elec:#D2D2D2; --c-sl:#D61FC9;
+  --tile-ink:#141B26;
+  --display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#121821; --surface:#1B2330; --ink:#E8EDF3; --muted:#9AA6B5; --line:#2F3A4A;
+    --accent:#4FC08D; --accent-ink:#0B1A12; --warn:#FF8A80; --warn-bg:#3A1F1E; --ok:#6FD3A3; --ok-bg:#16322A; --note-bg:#33301C;
+    --c-ge:#E9ECF0; --c-pe:#D98A45; --c-nstp:#D9A99F; --c-inst:#6FA656; --c-core:#E6D44F;
+    --c-major:#6E9AE0; --c-prac:#AEA2D0; --c-elec:#BFBFBF; --c-sl:#F25CE6;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#121821; --surface:#1B2330; --ink:#E8EDF3; --muted:#9AA6B5; --line:#2F3A4A;
+  --accent:#4FC08D; --accent-ink:#0B1A12; --warn:#FF8A80; --warn-bg:#3A1F1E; --ok:#6FD3A3; --ok-bg:#16322A; --note-bg:#33301C;
+  --c-ge:#E9ECF0; --c-pe:#D98A45; --c-nstp:#D9A99F; --c-inst:#6FA656; --c-core:#E6D44F;
+  --c-major:#6E9AE0; --c-prac:#AEA2D0; --c-elec:#BFBFBF; --c-sl:#F25CE6;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5}
+img{max-width:100%}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.wrap{max-width:1280px;margin:0 auto;padding:20px 16px 48px}
+
+header.top{display:flex;flex-wrap:wrap;gap:16px 32px;align-items:end;justify-content:space-between;margin-bottom:20px}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(1.9rem,4.2vw,3rem);line-height:1.02;letter-spacing:-.02em;margin:0}
+.sub{color:var(--muted);margin:.4rem 0 0;max-width:62ch}
+.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.controls label{font-size:.9rem;color:var(--muted)}
+select,input[type=text],input[type=search]{background:var(--surface);border:1.5px solid var(--line);border-radius:8px;padding:8px 10px;min-height:42px}
+.btn{border:1.5px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 14px;min-height:42px;cursor:pointer;font-weight:700}
+.btn:hover{border-color:var(--ink)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+
+/* checker */
+.checker{background:var(--surface);border:1.5px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:18px}
+.checker h2{font-family:var(--display);font-size:1.25rem;margin:0 0 4px;font-weight:700}
+.checker p.hint{margin:0 0 10px;color:var(--muted);font-size:.95rem}
+.checker .row{display:flex;gap:8px}
+.checker input{flex:1;min-width:0;font-size:1.05rem}
+#checkResult{margin-top:10px}
+.verdict{border-radius:10px;padding:10px 14px;margin-top:8px}
+.verdict.yes{background:var(--ok-bg)}
+.verdict.no{background:var(--warn-bg)}
+.verdict.req{background:var(--note-bg)}
+.verdict strong{display:block}
+.verdict .small{font-size:.9rem;color:var(--muted)}
+
+/* layout */
+.layout{display:grid;grid-template-columns:1fr;gap:18px}
+
+/* official-style sheet: always rendered like the printed Benilde flowchart */
+.sheetdoc{
+  --c-ge:#FFFFFF; --c-pe:#E69138; --c-nstp:#E6B8AF; --c-inst:#6AA84F; --c-core:#FFFF00;
+  --c-major:#6D9EEB; --c-prac:#B4A7D6; --c-elec:#CCCCCC; --c-sl:#E83AD8;
+  background:#FFFFFF;color:#000;border:1px solid #BFC5CC;border-radius:6px;padding:22px 22px 26px;
+  font-family:Arial, "Liberation Sans", Helvetica, sans-serif;
+}
+.docHead{text-align:center;line-height:1.3;margin-bottom:16px}
+.docHead b{display:block;font-size:1.02rem}
+.docHead .s{display:block;font-weight:700;font-size:.95rem}
+.docHead .fcl{display:flex;justify-content:center;gap:56px;font-weight:700;font-size:.95rem;margin-top:2px}
+.mission{max-width:520px;margin-bottom:18px;font-size:.85rem}
+.mission .box{border:1px solid #000;padding:12px 16px;text-align:center;font-size:.92rem;line-height:1.4;margin-top:2px}
+.docBody{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:22px;align-items:start}
+@media (max-width:1100px){.docBody{grid-template-columns:1fr}}
+.fcScroll{overflow-x:auto;padding:8px 8px 6px 4px}
+.fc{display:grid;grid-template-columns:repeat(9,minmax(72px,1fr));column-gap:8px;row-gap:9px;min-width:780px}
+.yr{grid-column:span 3;border:1px solid #000;text-align:center;font-size:.82rem}
+.yr .yl{padding:2px 0;border-bottom:1px solid #000}
+.yr .tn{display:grid;grid-template-columns:repeat(3,1fr)}
+.yr .tn span{font-size:.78rem;border-left:1px solid #000}
+.yr .tn span:first-child{border-left:0}
+.yr+.yr{margin-left:4px}
+.fc .empty-cell{min-height:52px}
+.fc .conn{position:relative}
+.fc .conn::before{content:"";position:absolute;left:-8px;right:-8px;top:50%;border-top:1.5px solid #000}
+
+.fcpad{padding:0}
+@media (max-width:640px){.sheetdoc{padding:14px 10px}.docHead .fcl{gap:20px}}
+.scrollhint{display:none;font-size:.8rem;color:#555;margin:0 0 4px}
+@media (max-width:860px){.scrollhint{display:block}}
+
+/* tile, styled like the flowchart boxes */
+.tile{position:relative;display:flex;align-items:stretch;background:var(--cat);color:#000;border:1px solid #000;min-height:52px}
+.tile .body{flex:1;min-width:0;background:transparent;border:0;cursor:pointer;padding:4px 4px 3px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:#000;font-family:inherit}
+.tile .code{font-size:.84rem;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.tile .u{font-size:.84rem;line-height:1.2}
+.tile .pick{font-size:.66rem;font-weight:700;background:rgba(255,255,255,.8);border:1px solid rgba(0,0,0,.35);padding:0 3px;margin-left:16px;max-width:calc(100% - 16px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:1px}
+.tile .check{position:absolute;left:3px;bottom:3px;width:18px;height:18px;padding:0;border:0;background:transparent;cursor:pointer;display:grid;place-items:center;z-index:1}
+.tile .check i{width:15px;height:15px;border-radius:50%;border:1.5px solid rgba(0,0,0,.6);background:rgba(255,255,255,.75);display:grid;place-items:center;font-style:normal;font-size:10px;font-weight:700;line-height:1}
+.tile .lockic{position:absolute;right:3px;bottom:2px;font-size:.7rem}
+.tile.sl{border:2.5px solid var(--c-sl)}
+.tile.st-done{box-shadow:inset 0 0 0 2px #0E5B3F}
+.tile.st-done .check i{background:#0E5B3F;border-color:#0E5B3F;color:#fff}
+.tile.st-plan{outline:2.5px dashed #000;outline-offset:2px}
+.tile.st-lock .body,.tile.st-lock .check{opacity:.45}
+.tile.st-lock{background-image:repeating-linear-gradient(135deg,rgba(0,0,0,.09) 0 5px,transparent 5px 10px)}
+.tile.has-warn::after{content:"!";position:absolute;top:-8px;right:-8px;width:18px;height:18px;border-radius:50%;background:#B3261E;color:#fff;font-size:12px;font-weight:700;display:grid;place-items:center;z-index:2}
+.cat-ge{--cat:var(--c-ge)} .cat-pe{--cat:var(--c-pe)} .cat-nstp{--cat:var(--c-nstp)} .cat-inst{--cat:var(--c-inst)}
+.cat-core{--cat:var(--c-core)} .cat-major{--cat:var(--c-major)} .cat-prac{--cat:var(--c-prac)} .cat-elec{--cat:var(--c-elec)}
+
+/* legend, laid out like the flowchart's legend */
+.side h3{font-size:.9rem;font-weight:400;margin:0 0 8px}
+.lg{display:grid;grid-template-columns:1fr 1fr;gap:12px 14px;margin-bottom:18px}
+.lg .lb{border:1px solid #000;background:var(--cat);min-height:34px;display:grid;place-items:center;text-align:center;font-size:.78rem;line-height:1.2;padding:3px 4px}
+.lg .lb.dot{border:1.5px dotted #000}
+.lg .lb.sl{border:2.5px solid var(--c-sl);background:#fff}
+.st h3{margin-top:4px}
+.st ul{list-style:none;margin:0 0 16px;padding:0;display:grid;gap:7px}
+.st li{display:flex;align-items:center;gap:10px;font-size:.8rem;line-height:1.25}
+.sw{flex:0 0 44px;height:26px;border:1px solid #000;background:var(--c-major);position:relative}
+.sw.done{box-shadow:inset 0 0 0 2px #0E5B3F}
+.sw.done::before{content:"✓";position:absolute;left:3px;top:3px;width:13px;height:13px;border-radius:50%;background:#0E5B3F;color:#fff;font-size:9px;display:grid;place-items:center}
+.sw.plan{outline:2px dashed #000;outline-offset:2px}
+.sw.lock{opacity:.5;background-image:repeating-linear-gradient(135deg,rgba(0,0,0,.15) 0 4px,transparent 4px 8px)}
+.sw.warn{background:var(--c-elec)}
+.sw.warn::after{content:"!";position:absolute;right:-7px;top:-7px;width:15px;height:15px;border-radius:50%;background:#B3261E;color:#fff;font-size:10px;font-weight:700;display:grid;place-items:center}
+.notes{font-size:.74rem;line-height:1.35}
+.notes h3{margin-bottom:6px}
+.notes b{display:block;margin-top:8px}
+.notes ol{margin:2px 0 0;padding-left:16px}
+.notes p{margin:2px 0}
+
+/* back of flowchart */
+.back h2{font-size:1rem;font-weight:700;text-align:center;margin:0 0 12px;letter-spacing:.02em}
+.backgrid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:24px;align-items:start}
+@media (max-width:980px){.backgrid{grid-template-columns:1fr}}
+.terms2{display:grid;grid-template-columns:1fr 1fr;gap:4px 20px}
+@media (max-width:700px){.terms2{grid-template-columns:1fr}}
+.tt{width:100%;border-collapse:collapse;font-size:.8rem;margin-bottom:10px}
+.tt caption{text-align:left;font-weight:700;padding:4px 0}
+.k-cim .tt caption{background:var(--k-cim-t);border-left:4px solid var(--k-cim);padding:5px 8px;margin-bottom:2px;color:#0E5B3F}
+.k-cim .terms2{padding-top:8px}
+.kbar .ktag.k-major,.tt .ktag.k-major{background:#0E5B3F;opacity:1}
+.kbar .ktag.k-major{background:#fff;color:#0E5B3F;margin:0 2px;display:inline-block}
+.tt tr.k-major td.cd{box-shadow:inset 4px 0 0 #0E5B3F;padding-left:8px}
+.tt .ktag{display:block;width:max-content;margin:2px 0 0;font-size:.56rem}
+.k-cim .kbar b .ktag{background:rgba(255,255,255,.22)}
+.tt th{text-align:left;font-weight:700;border-bottom:1px solid #000;padding:2px 4px}
+.tt td{padding:2px 4px;vertical-align:top;border-bottom:1px solid #E2E2E2}
+.tt td.u{width:44px;white-space:nowrap} .tt td.cd{width:72px;font-weight:700;white-space:nowrap} .tt td.st{width:70px;white-space:nowrap}
+.tt tr{cursor:pointer} .tt tr:hover td{background:#F2F5FA}
+.stmark{font-weight:700}.stmark.done{color:#0E5B3F}.stmark.plan{color:#000}
+.choices h3{font-size:.86rem;font-weight:700;margin:12px 0 4px;border-bottom:1px solid #000;padding-bottom:2px}
+.choices h3:first-child{margin-top:0}
+.choices h4{font-size:.76rem;font-weight:700;margin:8px 0 2px;color:#333}
+.choices ul{list-style:none;margin:0;padding:0}
+.choices li{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:.8rem;padding:3px 0;border-bottom:1px solid #EEE}
+.choices li .nm b{font-weight:700}
+.choices li .tag{font-size:.68rem;color:#555;display:block}
+.choices .add{flex:0 0 auto;font:inherit;font-size:.72rem;font-weight:700;border:1px solid #000;background:#fff;color:#000;border-radius:4px;padding:3px 8px;cursor:pointer;min-height:28px}
+.choices .add:hover{background:#000;color:#fff}
+.choices .add.taken{background:#0E5B3F;border-color:#0E5B3F;color:#fff}
+.choices .add.taken:hover{background:#0a4630}
+.choices .acts{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end;align-items:center;flex:0 0 auto;max-width:60%}
+.choices .rm{font:inherit;font-size:.72rem;background:transparent;border:0;text-decoration:underline;color:#333;cursor:pointer;padding:4px 2px;min-height:28px}
+.choices .count{font-size:.8rem;margin:0 0 6px;padding:4px 8px;background:#F2F5FA;border-left:3px solid #0E5B3F}
+.hblink{display:inline-flex;align-items:center;gap:6px;font-weight:700;color:var(--accent-ink);background:var(--accent);border-radius:8px;padding:8px 14px;text-decoration:none;min-height:42px;margin:4px 0 12px}
+.hblink:hover{filter:brightness(1.1)}
+.choices .in{flex:0 0 auto;font-size:.72rem;font-weight:700;color:#0E5B3F;text-align:right}
+.choices .lead{font-size:.76rem;margin:0 0 6px;color:#333}
+#addMsg{font-size:.82rem;min-height:1.2em;margin:0 0 8px;color:#0E5B3F;font-weight:700}
+
+/* sidebar */
+aside{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:14px;align-items:start}
+.card{background:var(--surface);border:1.5px solid var(--line);border-radius:14px;padding:14px 16px}
+.card h2{font-family:var(--display);font-size:1.1rem;margin:0 0 8px;font-weight:700}
+.big{font-family:var(--display);font-weight:800;font-size:2.2rem;line-height:1}
+.big small{font-size:1rem;font-weight:500;color:var(--muted)}
+.bar{height:10px;border-radius:5px;background:var(--line);overflow:hidden;margin:8px 0 4px}
+.bar span{display:block;height:100%;background:var(--accent);width:0;transition:width .3s}
+.mini{font-size:.88rem;color:var(--muted)}
+.catrows{display:grid;gap:5px;margin-top:10px}
+.catrow{display:grid;grid-template-columns:14px 1fr auto;gap:8px;align-items:center;font-size:.88rem}
+.catrow .dot{width:14px;height:14px;border-radius:3px;background:var(--cat);border:1px solid rgba(20,27,38,.3)}
+.issues{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.issues li{font-size:.9rem;padding:8px 10px;border-radius:8px;background:var(--warn-bg)}
+.issues li.note{background:var(--note-bg)}
+.issues li b{display:block}
+.next{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:.85rem;font-weight:700;border-radius:6px;padding:3px 8px;background:var(--cat);color:var(--tile-ink);border:1px solid rgba(20,27,38,.25);cursor:pointer}
+.empty{color:var(--muted);font-size:.9rem;margin:0}
+
+/* sheet */
+.scrim{position:fixed;inset:0;background:rgba(10,14,20,.45);display:none;z-index:20}
+.scrim.on{display:block}
+.sheet{position:fixed;top:0;right:0;height:100%;width:min(440px,100%);background:var(--surface);z-index:21;transform:translateX(100%);transition:transform .22s ease;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);border-left:1.5px solid var(--line)}
+.sheet.on{transform:none}
+@media (prefers-reduced-motion:reduce){.sheet,.tile,.bar span{transition:none}}
+.sheet header{display:flex;justify-content:space-between;align-items:start;gap:12px;padding:16px 18px;border-bottom:1.5px solid var(--line)}
+.sheet h2{font-family:var(--display);margin:0;font-size:1.5rem;font-weight:800;line-height:1.1}
+.sheet .ttl{margin:4px 0 0;color:var(--muted)}
+.sheet .x{border:0;background:transparent;font-size:1.6rem;line-height:1;cursor:pointer;padding:4px 8px}
+.sheet .content{padding:16px 18px;overflow-y:auto;flex:1;display:grid;gap:16px;align-content:start}
+.seg{display:grid;grid-template-columns:repeat(4,1fr);border:1.5px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{border:0;background:transparent;padding:10px 6px;cursor:pointer;font-weight:700;font-size:.92rem}
+.seg button+button{border-left:1.5px solid var(--line)}
+.seg button[aria-pressed=true]{background:var(--ink);color:var(--bg)}
+.field label{display:block;font-weight:700;margin-bottom:4px}
+.field select,.field input{width:100%}
+.field .help{font-size:.85rem;color:var(--muted);margin:4px 0 0}
+.facts{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:.92rem;margin:0}
+.facts dt{color:var(--muted)}
+.facts dd{margin:0}
+.msg{border-radius:8px;padding:8px 10px;font-size:.9rem}
+.msg.warn{background:var(--warn-bg)} .msg.ok{background:var(--ok-bg)} .msg.note{background:var(--note-bg)}
+
+.rules{background:var(--surface);border:1.5px solid var(--line);border-radius:14px;padding:16px 18px;margin-top:18px}
+.rules h2{font-family:var(--display);font-size:1.25rem;margin:0 0 4px;font-weight:700}
+.rules .hint{margin:0 0 10px;color:var(--muted);font-size:.92rem}
+.rules details{border-top:1.5px solid var(--line);padding:4px 0}
+.rules summary{cursor:pointer;font-weight:700;padding:8px 0;list-style-position:outside}
+.rules details p,.rules details ol{margin:0 0 10px;max-width:78ch}
+.rules .pos{padding-left:18px}
+.tblwrap{overflow-x:auto;margin:4px 0 10px}
+.rules table{border-collapse:collapse;font-size:.9rem;min-width:320px}
+.rules th,.rules td{border:1px solid var(--line);padding:4px 10px;text-align:left}
+.podet{font-size:.9rem}.podet summary{cursor:pointer;font-weight:700}.podet ul{margin:6px 0 0;padding-left:18px;display:grid;gap:4px}
+
+footer{margin-top:22px;font-size:.9rem;color:var(--muted);max-width:80ch}
+footer a{color:var(--ink)}
+textarea{width:100%;min-height:200px;font:inherit;font-size:.85rem;border:1.5px solid var(--line);border-radius:8px;padding:8px;background:var(--surface)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.disclaimer{display:flex;gap:14px;align-items:flex-start;background:var(--note-bg);border:2px solid var(--warn);border-radius:12px;padding:14px 16px;margin-bottom:18px}
+.disclaimer .ic{flex:0 0 auto;width:30px;height:30px;border-radius:50%;background:var(--warn);color:var(--surface);display:grid;place-items:center;font-weight:800;font-size:1.1rem}
+.disclaimer strong{display:block;font-family:var(--display);font-size:1.15rem;line-height:1.2;margin-bottom:2px}
+.disclaimer p{margin:0;max-width:85ch}
+.dlform{display:grid;gap:12px}
+.tile.st-enr{box-shadow:inset 0 0 0 3px #3949AB}
+.tile.k-am.st-enr{box-shadow:inset 0 5px 0 var(--k-am),inset 0 0 0 3px #3949AB} .tile.k-ge.st-enr{box-shadow:inset 0 5px 0 var(--k-ge),inset 0 0 0 3px #3949AB}
+.tile.st-enr .code{font-weight:800}
+.enrtag{position:absolute;right:12px;top:-7px;box-shadow:0 0 0 1.5px #fff;font-size:.55rem;font-weight:800;border-radius:3px;padding:0 3px;line-height:1.5;z-index:2;background:#3949AB;color:#fff;font-family:var(--body)}
+.sw.enr{box-shadow:inset 0 0 0 3px #3949AB}
+.seg button.segenr[aria-pressed=true]{background:#3949AB;color:#fff}
+.stmark.enr{color:#3949AB}
+.choices .add.enr,.vacts .btn.enrb{border-color:#3949AB;color:#3949AB;background:#fff}
+.choices .add.enr:hover,.vacts .btn.enrb:hover{background:#3949AB;color:#fff}
+.enrbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;background:#E8EAF6;border:2px solid #3949AB;border-radius:10px;padding:10px 12px;margin:0 0 12px;color:#000}
+.enrbar .nbh b{color:#3949AB}
+.enrbar .nbh span b{color:#000;font-size:inherit;display:inline}
+.enrwhen{display:flex;gap:6px;margin-top:6px}
+.enrwhen select{min-height:34px;padding:3px 6px;font-size:.82rem;background:#fff;color:#000;border:1.5px solid #9FA8DA;border-radius:6px}
+.enrsum{align-self:center;font-size:.82rem;font-weight:700;color:#3949AB}
+.byline{margin:.25rem 0 0;font-size:.72rem;font-weight:400;color:var(--muted);letter-spacing:.01em}
+footer .credit{margin-top:14px;padding-top:12px;border-top:1.5px solid var(--line)}
+.wtop{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 16px;margin:0 0 8px}
+.btn.wclrall{font-size:.85rem;min-height:36px;padding:5px 12px;border-color:#B3261E;color:#B3261E;background:transparent}
+.btn.wclrall:hover{background:#B3261E;color:#fff}
+.wclr{font:inherit;font-size:.82rem;font-weight:700;color:#B3261E;background:transparent;border:1.5px solid #B3261E;border-radius:7px;padding:6px 10px;cursor:pointer;width:100%}
+.wclr:hover{background:#B3261E;color:#fff}
+.disclaimer .dpass{margin-top:8px;padding-top:8px;border-top:1px dashed var(--warn)}
+.tile.st-done{box-shadow:inset 0 0 0 3px #0E5B3F}
+.tile.st-done .code{font-weight:800}
+.passtag,.failtag{position:absolute;right:12px;top:-7px;box-shadow:0 0 0 1.5px #fff;font-size:.55rem;font-weight:800;letter-spacing:.02em;border-radius:3px;padding:0 3px;line-height:1.5;z-index:2;font-family:var(--body)}
+.passtag{background:#0E5B3F;color:#fff}
+.failtag{background:#B3261E;color:#fff}
+.tile.st-fail{border:2.5px solid #B3261E;background-image:repeating-linear-gradient(135deg,rgba(179,38,30,.13) 0 5px,transparent 5px 10px)}
+.tile.st-fail .check i{border-color:#B3261E;color:#B3261E}
+.tile.k-am.st-fail,.tile.k-ge.st-fail{box-shadow:none}
+.sw.fail{border:2.5px solid #B3261E;background-image:repeating-linear-gradient(135deg,rgba(179,38,30,.2) 0 4px,transparent 4px 8px)}
+.seg button.segfail[aria-pressed=true]{background:#B3261E;color:#fff}
+.stmark.fail{color:#B3261E}
+.secnav{position:sticky;top:env(safe-area-inset-top,0px);z-index:12;display:flex;align-items:center;gap:10px;margin:0 -16px 16px;padding:8px 16px;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1.5px solid var(--line)}
+.snin{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;flex:1;min-width:0}
+.snin::-webkit-scrollbar{display:none}
+.snin a{flex:0 0 auto;text-decoration:none;color:var(--ink);font-weight:700;font-size:.86rem;padding:7px 12px;border-radius:999px;border:1.5px solid var(--line);background:var(--surface);white-space:nowrap}
+.snin a:hover{border-color:var(--ink)}
+.snin a.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.snprog{flex:0 0 auto;font-size:.8rem;font-weight:700;color:var(--muted);white-space:nowrap}
+@media (max-width:640px){.snprog{display:none}}
+section[id],aside[id],.board[id]{scroll-margin-top:calc(env(safe-area-inset-top,0px) + 70px)}
+.totop{position:fixed;right:18px;bottom:calc(env(safe-area-inset-bottom,0px) + 18px);z-index:14;border:0;border-radius:999px;background:var(--ink);color:var(--bg);font-weight:800;padding:10px 16px;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.25)}
+.nextbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;background:#E3F2EA;border:2px solid #0E5B3F;border-radius:10px;padding:10px 12px;margin:0 0 12px;color:#000}
+.nbh{display:flex;flex-direction:column;flex:0 0 auto;max-width:260px}
+.nbh b{font-size:1rem;color:#0E5B3F}
+.nbh span{font-size:.76rem;color:#2c3a33}
+.nbchips{display:flex;flex-wrap:wrap;gap:6px;flex:1;min-width:0}
+.nbchips .chip{display:inline-flex;flex-direction:column;align-items:flex-start;gap:0;font-size:.95rem;padding:5px 10px;border-radius:7px;border:1.5px solid #000;min-height:42px;justify-content:center;background:var(--cat);color:#000;font-family:inherit}
+.nbchips .chip .nt{font-size:.62rem;font-weight:700;opacity:.75;line-height:1.1}
+.nbchips .chip:hover,.nbchips .chip:focus-visible{box-shadow:0 0 0 3px #0E5B3F}
+.nbchips .empty{margin:0;font-size:.85rem;color:#2c3a33}
+.tile.hl{outline:4px solid #0E5B3F;outline-offset:2px;z-index:3}
+.qform{margin-top:12px;padding:12px;border-radius:10px;background:var(--surface);border:1.5px dashed #6B5B95}
+.qhead{margin:0 0 8px;display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center}
+.qgrid{display:grid;grid-template-columns:minmax(100px,.8fr) minmax(180px,2fr) minmax(70px,.5fr) minmax(130px,1fr) minmax(110px,.9fr) minmax(170px,1.3fr);gap:8px}
+@media (max-width:1000px){.qgrid{grid-template-columns:1fr 1fr}.qgrid .qwide{grid-column:1/-1}}
+.qgrid label{font-size:.8rem}
+.qgrid input,.qgrid select{width:100%;min-height:38px;padding:5px 8px;font-size:.9rem}
+.devnote{display:flex;gap:12px;align-items:flex-start;background:var(--surface);border:1.5px solid var(--line);border-left:6px solid #2F5FB3;border-radius:12px;padding:12px 16px;margin-bottom:14px}
+.devnote .devic{font-size:1.4rem;line-height:1.2}
+.devnote p{margin:0;font-size:.93rem;max-width:90ch}
+.devnote .devphone{display:none;color:var(--warn);font-weight:700}
+@media (max-width:760px){.devnote .devphone{display:inline}.devnote{border-left-color:var(--warn)}}
+.btn.rmbtn{border-color:#B3261E;color:#B3261E;background:transparent;justify-self:start}
+.btn.rmbtn:hover{background:#B3261E;color:#fff}
+.combo{position:relative;flex:1;min-width:0}
+.combo input{width:100%;font-size:1.05rem}
+.sugg{position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:15;list-style:none;margin:0;padding:4px;background:var(--surface);border:1.5px solid var(--line);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.14);max-height:340px;overflow-y:auto}
+.sugg li{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:7px;cursor:pointer;font-size:.92rem}
+.sugg li[aria-selected="true"],.sugg li:hover{background:var(--bg)}
+.sugg li b{min-width:76px}
+.sugg li .st{color:var(--muted);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sugg li mark{background:#FFE58A;color:inherit;border-radius:2px;padding:0 1px}
+.ktag.k-req{background:#2F5FB3} .ktag.k-slot{background:#7A7A7A} .ktag.k-pe{background:var(--k-pe)} .ktag.k-nstp{background:var(--k-nstp)}
+.vacts{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;align-items:center}
+.vacts .btn{min-height:38px;padding:6px 12px;font-size:.88rem}
+.vacts .btn.taken{background:#0E5B3F;border-color:#0E5B3F;color:#fff}
+.vacts .vstate{font-weight:700;color:var(--ok);font-size:.9rem}
+.vacts .vlab{font-size:.82rem;color:var(--muted);width:100%;margin-top:2px}
+@keyframes flash{0%,100%{outline-color:transparent}20%,60%{outline-color:#F2B705}}
+.flash{outline:4px solid transparent;outline-offset:3px;animation:flash 1.6s ease 1}
+@media (prefers-reduced-motion:reduce){.flash{animation:none;outline-color:#F2B705}}
+.wsend{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin-top:12px}
+.planpre{white-space:pre-wrap;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.78rem;background:var(--bg);border:1.5px solid var(--line);border-radius:8px;padding:10px;max-height:220px;overflow:auto;margin:0}
+a.btn{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;color:inherit}
+a.btn.primary{color:var(--accent-ink)}
+.wish{background:var(--surface);border:1.5px solid var(--line);border-left:6px solid #0E5B3F;border-radius:14px;padding:16px 18px}
+.wish h2{font-family:var(--display);font-size:1.25rem;margin:0;font-weight:700}
+.wish .hint{margin:0 0 8px;color:var(--muted);font-size:.93rem;max-width:90ch}
+.wish .hint b{color:var(--ink)}
+.wgrp{margin:10px 0 4px}
+.wrow{display:grid;grid-template-columns:150px minmax(120px,1fr) minmax(100px,.8fr) repeat(3,minmax(140px,1.6fr)) 84px;gap:8px;align-items:center;padding:8px 10px;border-radius:8px;border:1.5px solid var(--line);margin-bottom:6px;background:var(--bg)}
+.wrow.whead{background:transparent;border:0;padding:0 10px;font-size:.78rem;font-weight:700;color:var(--muted)}
+.wrow.k-am{border-left:5px solid var(--k-am)} .wrow.k-ge{border-left:5px solid var(--k-ge)}
+.wrow select{width:100%;min-height:38px;padding:5px 8px;font-size:.88rem}
+.wrow select:disabled{opacity:.45}
+.wslot b{display:block}
+.wslot .mini{display:block;font-size:.74rem;line-height:1.3}
+.wdone{grid-column:2/-1;font-weight:700;color:var(--ok)}
+.wna{font-size:.8rem;color:var(--muted);text-align:center}
+.wnote{grid-column:1/-1;font-size:.8rem;margin:0}
+.wnote.warn{color:var(--warn);font-weight:700} .wnote.ok{color:var(--ok);font-weight:700}
+.wlab{display:none;font-size:.72rem;font-weight:700;color:var(--muted)}
+@media (max-width:1000px){.wrow{grid-template-columns:1fr 1fr}.wrow.whead{display:none}.wslot,.wdone,.wnote{grid-column:1/-1}.wlab{display:block}}
+.planwhen{background:var(--note-bg);border-radius:8px;padding:10px 12px}
+.pw2{display:grid;grid-template-columns:1.2fr 1fr;gap:8px}
+.extra{background:var(--surface);border:1.5px solid var(--line);border-left:6px solid #6B5B95;border-radius:14px;padding:16px 18px}
+.xhead{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin-bottom:4px}
+.extra h2{font-family:var(--display);font-size:1.25rem;margin:0;font-weight:700}
+.xbadge{font-size:.75rem;font-weight:800;color:#fff;background:#6B5B95;border-radius:999px;padding:2px 10px;white-space:nowrap}
+.extra .hint{margin:0 0 12px;color:var(--muted);font-size:.93rem;max-width:85ch}
+.extra .hint b{color:var(--ink)}
+.xform{display:grid;grid-template-columns:minmax(110px,1fr) minmax(180px,2fr) minmax(70px,.6fr) minmax(130px,1fr) minmax(110px,.9fr) minmax(170px,1.3fr) auto;gap:10px;align-items:end}
+@media (max-width:1100px){.xform{grid-template-columns:1fr 1fr}.xform .xwide{grid-column:1/-1}.xact{grid-column:1/-1}}
+@media (max-width:520px){.xform{grid-template-columns:1fr}}
+.xform .field label{font-size:.85rem}
+.xform input,.xform select{width:100%}
+.req{font-size:.95rem;font-weight:800;color:var(--warn);margin-left:2px}
+.xact .btn{width:100%}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.xmsg{min-height:1.3em;margin:8px 0 0;font-size:.88rem;font-weight:700}
+.xmsg.warn{color:var(--warn)} .xmsg.ok{color:var(--ok)}
+.xmsg button{font:inherit;font-size:.85rem;margin-left:6px;text-decoration:underline;background:none;border:0;color:inherit;cursor:pointer}
+.xtbl{width:100%;border-collapse:collapse;font-size:.9rem;margin-top:8px;min-width:640px}
+.xtbl th{text-align:left;font-size:.8rem;color:var(--muted);border-bottom:1.5px solid var(--line);padding:6px 8px}
+.xtbl td{border-bottom:1px solid var(--line);padding:6px 8px;vertical-align:top}
+.xtbl td:first-child{font-weight:700;white-space:nowrap}
+.xtbl .rm{font:inherit;font-size:.82rem;background:none;border:0;text-decoration:underline;color:var(--muted);cursor:pointer;padding:4px}
+.xwrap{overflow-x:auto}
+/* elective type colour coding */
+:root{--k-cim:#0E5B3F;--k-cim-t:#E3F2EA;--k-am:#4A4A4A;--k-am-t:#EFEFEF;--k-ge:#0F6E74;--k-ge-t:#DFF1F2;--k-pe:#B85F17;--k-pe-t:#FCEBDC;--k-nstp:#9A4639;--k-nstp-t:#F7E4E0}
+.ktag{display:inline-block;white-space:nowrap;flex:0 0 auto;font-size:.68rem;font-weight:800;letter-spacing:.03em;color:#fff;border-radius:4px;padding:1px 6px;vertical-align:middle;line-height:1.5}
+.k-am .ktag,.ktag.k-am{background:var(--k-am)} .k-ge .ktag,.ktag.k-ge{background:var(--k-ge)}
+.k-pe .ktag,.ktag.k-pe{background:var(--k-pe)} .k-nstp .ktag,.ktag.k-nstp{background:var(--k-nstp)}
+.kgrp{border:1.5px solid var(--kc);border-radius:8px;margin:0 0 16px;overflow:hidden;background:#fff}
+.kgrp.k-cim{--kc:var(--k-cim);--kt:var(--k-cim-t)} .kgrp.k-am{--kc:var(--k-am);--kt:var(--k-am-t)} .kgrp.k-ge{--kc:var(--k-ge);--kt:var(--k-ge-t)}
+.kgrp.k-pe{--kc:var(--k-pe);--kt:var(--k-pe-t)} .kgrp.k-nstp{--kc:var(--k-nstp);--kt:var(--k-nstp-t)}
+.kbar{background:var(--kc);color:#fff;padding:8px 12px}
+.kbar b{display:block;font-size:.92rem;letter-spacing:.01em}
+.kbar span{display:block;font-size:.74rem;opacity:.92;margin-top:1px}
+.kbar .ktag{display:inline-block;font-size:.66rem;margin:0 6px 0 0;opacity:1}
+.kin{padding:4px 12px 8px}
+.kgrp .choices-h3,.kgrp h3{background:var(--kt);margin:10px -12px 4px;padding:5px 12px;border-bottom:0;border-left:4px solid var(--kc)}
+.kgrp h3:first-child{margin-top:6px}
+.khead{display:flex;align-items:center;gap:8px;font-size:.92rem;margin:14px 0 6px;padding:5px 8px;border-radius:6px;border-left:4px solid}
+.khead.k-am{background:var(--k-am-t);border-color:var(--k-am);color:#18212E} .khead.k-ge{background:var(--k-ge-t);border-color:var(--k-ge);color:#18212E}
+.khead:first-child{margin-top:0}
+.kbadge{display:flex;align-items:center;gap:8px;border-radius:8px;padding:8px 10px;font-weight:700;font-size:.9rem;border-left:5px solid;color:#18212E}
+.kbadge.k-am{background:var(--k-am-t);border-color:var(--k-am)} .kbadge.k-ge{background:var(--k-ge-t);border-color:var(--k-ge)}
+.tile.k-am{box-shadow:inset 0 5px 0 var(--k-am)} .tile.k-ge{box-shadow:inset 0 5px 0 var(--k-ge)}
+.tile.k-am.st-done{box-shadow:inset 0 5px 0 var(--k-am),inset 0 0 0 2px #0E5B3F} .tile.k-ge.st-done{box-shadow:inset 0 5px 0 var(--k-ge),inset 0 0 0 2px #0E5B3F}
+.lb.ktile.k-am{box-shadow:inset 0 6px 0 var(--k-am)} .lb.ktile.k-ge{box-shadow:inset 0 6px 0 var(--k-ge)}
+.tt tr.k-am td.cd{box-shadow:inset 4px 0 0 var(--k-am);padding-left:8px} .tt tr.k-ge td.cd{box-shadow:inset 4px 0 0 var(--k-ge);padding-left:8px}
+.tt .ktag{margin-left:4px;font-size:.6rem}
+.steps{background:var(--surface);border:1.5px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:18px}
+.steps h2{font-family:var(--display);font-size:1.35rem;margin:0 0 2px;font-weight:800}
+.steps .hint{margin:0 0 12px;color:var(--muted);font-size:.95rem}
+.steplist{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+@media (max-width:1100px){.steplist{grid-template-columns:1fr}}
+.step{position:relative;display:grid;grid-template-columns:auto 1fr;gap:4px 12px;align-content:start;border:1.5px solid var(--line);border-radius:12px;padding:12px;background:var(--bg)}
+.step .snum{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:1.1rem;background:var(--surface);border:2px solid var(--line)}
+.step .sbody b{display:block;font-size:1rem;line-height:1.25;margin:4px 0}
+.step .sbody p{margin:0 0 10px;font-size:.88rem;color:var(--muted)}
+.step .sbody p b{display:inline;font-size:inherit;margin:0;color:var(--ink)}
+.step .sbody select{width:100%}
+.step .btn{font-size:.88rem;padding:6px 12px;min-height:38px}
+.step .sstate{grid-column:1/-1;font-size:.8rem;font-weight:700;color:var(--muted)}
+.step.current{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 25%,transparent);background:var(--surface)}
+.step.current .snum{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.step.done{border-color:var(--ok)}
+.step.done .snum{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}
+.step.done .sstate{color:var(--ok)}
+.step.blocked{opacity:.6}
+@keyframes nudge{0%,100%{transform:none}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.step.nudge{animation:nudge .35s ease 2}
+@media (prefers-reduced-motion:reduce){.step.nudge{animation:none}}
+.gate{display:none;background:#FFF6DA;border:2px solid #B3261E;color:#000;font-weight:700;padding:10px 14px;margin-bottom:14px;border-radius:8px;font-family:var(--body)}
+.gated .gate{display:block}
+.gated .fc .tile .check{cursor:not-allowed}
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 18px);transform:translateX(-50%) translateY(20px);max-width:min(560px,calc(100% - 32px));background:var(--ink);color:var(--bg);padding:12px 16px;border-radius:10px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:30}
+.toast.on{opacity:1;transform:translateX(-50%)}
+@media (prefers-reduced-motion:reduce){.toast{transition:none}}
+.btnrow{display:grid;gap:8px}
+.btn.danger{background:#B3261E;border-color:#B3261E;color:#fff}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>CIM Flowchart Checker</h1>
+      <p class="byline">Created by Ms. Vim Calmerin, MBA, CIM Academic Adviser · October 2026</p>
+      <p class="sub">AB Creative Industries Management. Uses the A.Y. 2025–2026 flowchart, which remains in effect for S.Y. 2026–2027 until further notice. Tick the courses you've passed, plan your electives, and see what counts toward your degree.</p>
+    </div>
+    <div class="controls">
+      <button class="btn primary" id="dlBtn">Download my results (PDF)</button>
+      <button class="btn" id="summaryBtn">Copy my plan</button>
+      <button class="btn" id="resetBtn">Start over</button>
+    </div>
+  </header>
+
+  <nav class="secnav" aria-label="Page sections">
+    <div class="snin" id="snin">
+      <a href="#stepsSec" data-nav="stepsSec">Steps</a>
+      <a href="#checkSec" data-nav="checkSec">Course check</a>
+      <a href="#flowSheet" data-nav="flowSheet">Flowchart</a>
+      <a href="#backSec" data-nav="backSec">Elective choices</a>
+      <a href="#wishSec" data-nav="wishSec">Wish list</a>
+      <a href="#extraSec" data-nav="extraSec">Other courses passed</a>
+      <a href="#summarySec" data-nav="summarySec">My summary</a>
+      <a href="#rulesSec" data-nav="rulesSec">Rules</a>
+    </div>
+    <span class="snprog" id="navProg"></span>
+  </nav>
+
+  <div class="devnote" role="note">
+    <span class="devic" aria-hidden="true">💻</span>
+    <p><b>Best on a laptop, desktop, or iPad.</b> The flowchart, elective lists, and wish list have many columns, so a bigger screen makes them much easier to see and use. <span class="devphone">You're on a small screen: you can still use the checker, but you'll need to swipe sideways on the flowchart and scroll more.</span></p>
+  </div>
+
+  <section class="steps" aria-labelledby="stepsH" id="stepsSec">
+    <h2 id="stepsH" tabindex="-1">How to use this checker</h2>
+    <p class="hint">Follow these five steps in order. Each step turns green when it's done.</p>
+    <ol class="steplist" id="steplist">
+      <li class="step" id="st1">
+        <span class="snum" aria-hidden="true">1</span>
+        <div class="sbody">
+          <b>Choose your current year</b>
+          <p>This unlocks the checker and applies year rules, like RESMETO being open only from your 3rd year.</p>
+          <label for="yearSel" class="sr">My current year</label>
+          <select id="yearSel">
+            <option value="">Select year</option>
+            <option value="1">1st year</option>
+            <option value="2">2nd year</option>
+            <option value="3">3rd year</option>
+            <option value="4">4th year or beyond</option>
+          </select>
+        </div>
+        <span class="sstate" aria-live="polite"></span>
+      </li>
+      <li class="step" id="st2">
+        <span class="snum" aria-hidden="true">2</span>
+        <div class="sbody">
+          <b>Tick the courses you've passed</b>
+          <p>On the flowchart, tap the small circle on each course you have <b>passed</b>. Leave everything else unticked; courses you haven't passed are on record with the Registrar's Office. If a course needs a prerequisite you haven't ticked, the checker will ask you first. If you're enrolled this term, open each of those courses and tap <b>Enrolled now</b>, then set the term under "Currently enrolled."</p>
+          <button class="btn jump" data-jump="flowSheet">Go to the flowchart</button>
+        </div>
+        <span class="sstate"></span>
+      </li>
+      <li class="step" id="st3">
+        <span class="snum" aria-hidden="true">3</span>
+        <div class="sbody">
+          <b>Record your electives</b>
+          <p>Under "Choices for electives," tap <b>I've taken it</b> for electives you passed, or <b>Add to plan</b> for ones you want to take. Do this for your AMELECs and your General Education electives (GELECT2 and GELECT3). Then fill in <b>My elective wish list</b> with when you plan to take each remaining elective and your 1st, 2nd, and 3rd choices. Music Production electives are 2 units each, so you need two of them for one AMELEC.</p>
+<p><b>Not sure an elective will count?</b> Check it first with the <a href="https://docs.google.com/forms/d/e/1FAIpQLSegEyaX00D4mzyHP4hrPz5HWzNFs02gJBER32tWoJ1f4B493A/viewform?usp=header" target="_blank" rel="noopener" style="font-weight:700;text-decoration:underline">CIM Electives Self-Assessment Tool ↗</a> (Google Form by the CIM Program Chairperson).</p>
+          <div class="btnrow"><button class="btn jump" data-jump="backH">Go to the elective choices</button><button class="btn jump" data-jump="wishSec">Go to my wish list</button></div>
+        </div>
+        <span class="sstate"></span>
+      </li>
+      <li class="step" id="st4">
+        <span class="snum" aria-hidden="true">4</span>
+        <div class="sbody">
+          <b>Fix anything flagged</b>
+          <p>A red <b>!</b> means something needs attention, like an elective that won't count. Open "Check these" and correct each item.</p>
+          <button class="btn jump" data-jump="issuesCard">Go to "Check these"</button>
+        </div>
+        <span class="sstate"></span>
+      </li>
+      <li class="step" id="st5">
+        <span class="snum" aria-hidden="true">5</span>
+        <div class="sbody">
+          <b>Download and send your plan</b>
+          <p>Save your results as a PDF for advising, then send your elective wish list to the CIM program so it can plan which electives to offer.</p>
+          <div class="btnrow">
+            <button class="btn primary" id="stepDl">Download my results (PDF)</button>
+            <button class="btn" id="stepSend">Send my elective plan</button>
+          </div>
+        </div>
+        <span class="sstate"></span>
+      </li>
+    </ol>
+  </section>
+
+  <div class="disclaimer" role="note">
+    <span class="ic" aria-hidden="true">!</span>
+    <div>
+      <strong>For checking purposes only</strong>
+      <p>This tool helps you check your progress against the CIM flowchart and plan your electives. It is not an official academic evaluation and does not replace enrollment approval. Your official evaluation comes from the Registrar's Office, and your courses must still be approved by your Academic Adviser. For official policies, refer to the <a href="https://drive.google.com/file/d/1vjZXdY6WL3KZjLhbW7V1bOlTUyt5U_6o/view?ts=6a9610a1" target="_blank" rel="noopener noreferrer">Benilde Student Handbook</a>.</p>
+      <p class="dpass"><b>Only tick the courses you have passed.</b> Courses you haven't passed, including ones you need to retake, are already in the Registrar's Office records, so you don't need to enter them here. This checklist is a guide to which courses to take next and a visual view of your flowchart. If you have questions, consult your Academic Adviser, Ms. Vim Calmerin (consultations on Mondays by appointment), or the CIM Program Chairperson, Ms. Lara Acuin.</p>
+    </div>
+  </div>
+
+  <section class="checker" aria-labelledby="chkH" id="checkSec">
+    <h2 id="chkH">Will this course count?</h2>
+    <p class="hint">Type a course code or title before you enroll, for example EVENMAN, WESTMUS, or "puppetry". Pick a suggestion, then record it right from here.</p>
+    <div class="row">
+      <label for="chkIn" class="sr">Course code or title</label>
+      <div class="combo">
+        <input id="chkIn" type="search" autocomplete="off" placeholder="Start typing a course code or title" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="chkList">
+        <ul id="chkList" class="sugg" role="listbox" aria-label="Matching courses" hidden></ul>
+      </div>
+    </div>
+    <div id="checkResult" aria-live="polite"></div>
+  </section>
+
+  <div class="layout">
+    <section class="board sheetdoc" aria-label="Flowchart" id="flowSheet">
+      <div class="gate" id="gateNote" role="status">Start with step 1: choose your current year above, then you can tick your courses.</div>
+      <div class="docHead">
+        <b>DE LA SALLE-COLLEGE OF SAINT BENILDE</b>
+        <span class="s">School of Arts, Culture, and Performance</span>
+        <span class="s">Bachelor of Arts in Creative Industries Management (ABCIM)</span>
+        <span class="fcl"><span>FLOWCHART</span><span>A.Y. 2025-2026</span></span>
+      </div>
+      <div class="mission">School's Mission<div class="box">De La Salle- College of Saint Benilde is committed to building a just and humane society by being at the forefront of innovative education that is accessible to the poor and diversely-gifted learners.</div></div>
+      <div class="docBody">
+        <div>
+          <div class="nextbar" aria-labelledby="nextH">
+            <div class="nbh"><b id="nextH">Open for you next</b><span>Prerequisites met. Tap a course to tick it or see its details.</span></div>
+            <div class="nbchips" id="nextUp"></div>
+          </div>
+          <div class="enrbar" aria-labelledby="enrH">
+            <div class="nbh"><b id="enrH">Currently enrolled</b><span>Open a course and tap <b>Enrolled now</b> for each course you're taking this term.</span>
+              <div class="enrwhen"><select id="curSY" aria-label="Current school year"></select><select id="curTerm" aria-label="Current term"><option value="">Term</option><option>Term 1</option><option>Term 2</option><option>Term 3</option></select></div></div>
+            <div class="nbchips" id="enrList"></div>
+          </div>
+          <p class="scrollhint">Swipe sideways to see all nine terms.</p>
+          <div class="fcScroll"><div class="fc" id="years"></div></div>
+        </div>
+        <div class="side">
+          <h3>LEGEND</h3>
+          <div class="lg">
+            <div class="lb cat-ge">General Education</div><div></div>
+            <div class="lb dot cat-pe">Physical Education</div><div class="lb cat-core">Core Courses</div>
+            <div class="lb dot cat-nstp">NSTP</div><div class="lb cat-major">Major Courses</div>
+            <div class="lb cat-inst">Institutional Courses</div><div class="lb cat-prac">Practicum</div>
+            <div class="lb sl">*Service Learning</div><div class="lb cat-elec">Elective Courses</div>
+          </div>
+          <h3>ELECTIVE TAGS (added by this checker)</h3>
+          <div class="lg">
+            <div class="lb cat-elec ktile k-am">AMELEC: dark band</div><div class="lb cat-ge ktile k-ge">GE elective: teal band</div>
+          </div>
+          <div class="st">
+            <h3>YOUR STATUS</h3>
+            <ul>
+              <li><span class="sw done"></span>Passed: you ticked the circle</li>
+              <li><span class="sw enr"></span>Currently enrolled this term</li>
+              <li><span class="sw plan"></span>Planned for a future term</li>
+              <li><span class="sw"></span>Open: plain box, prerequisites met</li>
+              <li><span class="sw lock"></span>Locked: a prerequisite is missing</li>
+              <li><span class="sw warn"></span>Needs attention: won't count, or a conflict</li>
+            </ul>
+          </div>
+          <div class="notes">
+            <h3>NOTES</h3>
+            <b>Open Electives</b>
+            <p>AMELEC1-3 (History/Theory of Form); AMELEC4-6 (Production)</p>
+            <p>The electives can be taken from the School of Arts, Culture, and Performance (SACP); School of Environment and Design (SED); and School of New Media Arts (SNMA)</p>
+            <b>Prerequisites</b>
+            <ol>
+              <li>RESMETO can only be taken beginning the 3rd AY of the student and a prerequisite to PRACREs</li>
+              <li>AMINTRO is a prerequisite to the following Arts Management major courses: AMORGMA, AMLEADR, AMFINMA, AMMKTPR, AMPROJM, AMLAWPO, AMTOURS, AMDIPLO, AMEDUCO, AMIDEAS, AMCRITM, and CRENTRE</li>
+              <li>AMLANG1 is a prerequisite to AMLANG2</li>
+              <li>Required number of internship hours for AMPRACT is at 300 minimum.</li>
+            </ol>
+            <b>Units</b>
+            <p>Units in parentheses, like (3), are non-credit units.</p>
+            <b>How to use</b>
+            <p>Tap the small circle to mark a course you passed. Tick only passed courses; courses not yet passed are recorded by the Registrar's Office. Tap the course box for details, to plan it, or to choose your elective.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="board sheetdoc back" aria-labelledby="backH" id="backSec">
+      <h2 id="backH">COURSE TITLES AND CHOICES FOR ELECTIVES</h2>
+      <div class="backgrid">
+        <div>
+          <section class="kgrp k-cim">
+            <div class="kbar"><b><span class="ktag">CIM</span> CIM Flowchart Courses (Terms 1–9)</b><span>All courses in your ABCIM flowchart. Tap a course to see its details or mark it; the status column shows what you've ticked. <span class="ktag k-major">MAJOR</span> marks CIM major courses.</span></div>
+            <div class="kin"><div class="terms2" id="titles"></div></div>
+          </section>
+        </div>
+        <div class="choices">
+          <p id="addMsg" aria-live="polite"></p>
+          <div id="choiceList"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="wish" aria-labelledby="wishH" id="wishSec">
+      <div class="xhead"><h2 id="wishH">My elective wish list</h2><span class="xbadge" style="background:#0E5B3F">Order of preference</span></div>
+      <p class="hint">For each elective you haven't taken yet, choose <b>when</b> you plan to take it and your <b>1st, 2nd, and 3rd choice</b>. Your 1st choice becomes your planned course. Your 2nd and 3rd choices are backups in case your 1st choice isn't offered. This helps the program decide which electives to open each term.</p>
+      <div class="wtop"><p class="mini" id="wishProg" style="margin:0"></p><button class="btn wclrall" id="wishClearAll">Clear my whole wish list</button></div>
+      <div id="wishList"></div>
+      <div class="wsend"><button class="btn primary" id="wishSend">Send my elective plan to the CIM program</button><span class="mini">Sends your wish list through the program's Google Form.</span></div>
+    </section>
+
+    <section class="extra" aria-labelledby="extraH" id="extraSec">
+      <div class="xhead">
+        <h2 id="extraH">Other Benilde courses I've passed</h2>
+        <span class="xbadge">For documentation only</span>
+      </div>
+      <p class="hint">List courses you <b>passed at Benilde</b> that are <b>not</b> on the CIM flowchart or the approved electives list, such as courses from a previous Benilde program (for shiftees) or extra courses you took. These are recorded for your adviser's reference and <b>are not counted toward your CIM degree</b>. Courses from other schools go through credit transfer with the Registrar's Office instead.</p>
+      <p class="mini" style="margin:0 0 6px"><span class="req" aria-hidden="true">*</span> Required: course code, school year, term, and confirming you passed. Only passed courses can be listed.</p>
+      <div class="xform" id="xform">
+        <div class="field"><label for="xCode">Course code <span class="req" aria-hidden="true">*</span><span class="sr"> (required)</span></label><input id="xCode" type="text" maxlength="12" autocomplete="off" placeholder="e.g. PHILOSO" aria-describedby="xCodeMsg"></div>
+        <div class="field xwide"><label for="xTitle">Course title</label><input id="xTitle" type="text" maxlength="90" placeholder="e.g. Introduction to Philosophy"></div>
+        <div class="field"><label for="xUnits">Units</label><input id="xUnits" type="text" inputmode="decimal" maxlength="4" placeholder="e.g. 3"></div>
+        <div class="field"><label for="xSY">School year <span class="req" aria-hidden="true">*</span><span class="sr"> (required)</span></label><select id="xSY"></select></div>
+        <div class="field"><label for="xTerm">Term <span class="req" aria-hidden="true">*</span><span class="sr"> (required)</span></label><select id="xTerm"><option value="">Select term</option><option>Term 1</option><option>Term 2</option><option>Term 3</option></select></div>
+        <div class="field"><label for="xGrade">Did you pass it? <span class="req" aria-hidden="true">*</span><span class="sr"> (required)</span></label><select id="xGrade"><option value="">Select</option><option value="yes">Yes, I passed</option><option value="no">No, I didn&#39;t pass</option></select></div>
+        <div class="xact"><button class="btn primary" id="xAdd" disabled>Add course</button></div>
+      </div>
+      <p id="xCodeMsg" class="xmsg" aria-live="polite"></p>
+      <div id="xList"></div>
+    </section>
+
+    <aside id="summarySec" aria-label="My summary">
+      <div class="card">
+        <h2>Credited units</h2>
+        <div class="big" id="unitsBig">0 <small>/ 0</small></div>
+        <div class="bar"><span id="unitsBar"></span></div>
+        <div class="mini" id="unitsMini"></div>
+        <div class="catrows" id="catRows"></div>
+      </div>
+      <div class="card">
+        <h2>Electives</h2>
+        <div id="elecSum"></div>
+      </div>
+      <div class="card">
+        <h2 id="issuesCard">Check these</h2>
+        <ul class="issues" id="issues"></ul>
+      </div>
+    </aside>
+  </div>
+
+<section class="rules" aria-labelledby="rulesH" id="rulesSec">
+    <h2 id="rulesH">Rules to know before you enroll</h2>
+    <p class="hint">From the Benilde Student Handbook (A.Y. 2025–2030) and the ABCIM Program Specification. Section numbers point to the handbook.</p>
+    <a class="hblink" href="https://drive.google.com/file/d/1vjZXdY6WL3KZjLhbW7V1bOlTUyt5U_6o/view?ts=6a9610a1" target="_blank" rel="noopener noreferrer">Open the Benilde Student Handbook (A.Y. 2025–2030)</a>
+    <details open><summary>Follow your flowchart and get your adviser's approval</summary>
+      <p>Take courses in the order shown on your flowchart. Underloading, dropping, withdrawing, or taking a leave of absence can delay your graduation past your Maximum Residency Period (3.6).</p>
+      <p>Your Academic Adviser must approve your courses before you enroll or adjust in any term, and any change to your enrollment also needs your adviser's approval (5.2).</p>
+    </details>
+    <details><summary>General Education electives</summary>
+      <p>You take three General Education electives, and only the listed courses count:</p>
+      <p><b>GELECT1 (Social Sciences and Philosophy):</b> REEXECO, Religious Experience and Spirituality, Term 3. This one is fixed.</p>
+      <p><b>GELECT2 (Math, Science, and Technology):</b> choose one, ECOLSUS (Ecology and Sustainability) or DSRMNGT (Disaster Management, also written DISMNGT), Term 5.</p>
+      <p><b>GELECT3 (Arts and Humanities):</b> choose one, LITSTOR (The Art of Storytelling) or COMNMED (Communication in the New Media), Term 8.</p>
+    </details>
+    <details><summary>Electives: what counts</summary>
+      <p>AMELEC 1–3 must be about the theory or history of a selected art form or related industries. AMELEC 4–6 must be about the production of a selected art form. Both are free choice with restrictions: only courses on the approved list are credited. They can be taken from SACP, SED, and SNMA.</p>
+      <p>Music Production electives are 2 units each, so two are needed for one AMELEC. AMCURTP, AMINFOA, AMTALEN, AMDIGIT, and AMGASTR are for students enrolled from AY 2023–2024 onwards.</p>
+      <p>Not sure an elective will count? Check it with the <a href="https://docs.google.com/forms/d/e/1FAIpQLSegEyaX00D4mzyHP4hrPz5HWzNFs02gJBER32tWoJ1f4B493A/viewform?usp=header" target="_blank" rel="noopener" style="font-weight:700;text-decoration:underline">CIM Electives Self-Assessment Tool ↗</a>.</p>
+    </details>
+    <details><summary>Course load, overload, and underload</summary>
+      <p>Your regular load is the one on your flowchart (3.6.1). An overload may be allowed for students with excellent academic performance or those graduating at the end of the term, enrolled during the adjustment period only. Graduating students may take up to 24 units (3.6.2).</p>
+      <p>If you end up underloaded because a course isn't offered, consult your Academic Adviser and, if possible, add units during the adjustment period (3.6.3).</p>
+    </details>
+    <details><summary>Special classes and cross-enrollment</summary>
+      <p>Only students graduating at the end of the term may request a special class, and only when a required course isn't offered, an old-curriculum course has no substitute, the course is a prerequisite that didn't reach the minimum enrollees, or for other meritorious cases decided by the Registrar. File the request with your program before the term begins (3.8).</p>
+      <p>Cross-enrollment to another school is allowed only if the course isn't regularly offered at Benilde and no special class is available. Get a Cross-Enrollment Permit from the Registrar at least one week before pre-enrollment (3.15).</p>
+    </details>
+    <details><summary>Dropping and withdrawing</summary>
+      <p>Dropping is discouraged. Courses dropped in the first two weeks won't appear on your Transcript of Records, but retention fees apply: 25% in week 1, 50% in week 2, and no refund after that (3.9).</p>
+      <p>Withdrawal from week 3 to week 5 shows as "W" on your transcript, with 100% tuition retention. Excessive absences are not a valid reason to withdraw; you'll get an R instead (3.10).</p>
+    </details>
+    <details><summary>Attendance</summary>
+      <p>Missing more than 20% of total course hours means a failing grade (R or F) and no credit (5.6.1). That is 6 or more absences in a class that meets twice a week, or 3 or more in a class that meets once a week (5.6.7).</p>
+      <p>Arriving within the first 20 minutes of a 1-hour class, or 30 minutes of a 1.5-hour or longer class, counts as late, which is half an absence. Arriving after that counts as absent (5.6.3–5.6.4).</p>
+    </details>
+    <details><summary>Grades, failing, and deferred grades</summary>
+      <div class="tblwrap"><table><thead><tr><th>Percentage</th><th>Grade</th><th>Description</th></tr></thead><tbody>
+        <tr><td>97–100</td><td>4.000</td><td>Excellent</td></tr><tr><td>93–96</td><td>3.500</td><td>Superior</td></tr>
+        <tr><td>89–92</td><td>3.000</td><td>Very Good</td></tr><tr><td>85–88</td><td>2.500</td><td>Good</td></tr>
+        <tr><td>80–84</td><td>2.000</td><td>Satisfactory</td></tr><tr><td>75–79</td><td>1.500</td><td>Fair</td></tr>
+        <tr><td>70–74</td><td>1.000</td><td>Pass</td></tr><tr><td>Below 70</td><td>R</td><td>Repeat</td></tr>
+        <tr><td></td><td>W</td><td>Authorized Withdrawal</td></tr><tr><td></td><td>A</td><td>Audit</td></tr><tr><td></td><td>9.9</td><td>Deferred Grade</td></tr>
+      </tbody></table></div>
+      <p>A grade of F or R means you must re-enroll in the course (5.4.4). CSBLIFE and CSBGRAD are Pass or Fail; NSTP, CSBLIFE, and CSBGRAD are not included in your GPA (5.4.3, 5.4.9.4).</p>
+      <p>Practicum and thesis courses may get a deferred grade of 9.9. You have the next two terms to complete the requirements, enrolling in the deferred course code; otherwise it becomes R (5.4.5).</p>
+    </details>
+    <details><summary>Maximum Residency Period (MRP), including shiftees and transferees</summary>
+      <p><b>What the MRP is.</b> The MRP is the longest time you're allowed to finish your degree: 1.5 times the number of terms on your flowchart (5.4.16.1.1). The CIM flowchart has 9 terms, so 1.5 &times; 9 = 13.5 terms. Ask the Registrar's Office to confirm your exact MRP end term.</p>
+      <p><b>What counts toward it.</b> Every term from when you started, including terms on Leave of Absence (LOA) or Absence Without Leave (AWOL) (5.4.16.1.3, 3.11). Underloading, dropping, withdrawing, and failing courses can all push your graduation later (3.6).</p>
+      <p><b>What happens when it runs out.</b> You can't be readmitted once your MRP expires, and reaching the end of it is a ground for separation from the College (5.4.16.1.2, 3.20.2.1).</p>
+      <p><b>Extensions.</b> An MRP extension may be granted, but you must keep good disciplinary standing; a major offense during the extension can revoke it (5.4.16.1.5). If you're returning from LOA or AWOL and may go past your MRP, get the extension approved before you re-enroll (3.12).</p>
+      <p><b>If you are a shiftee.</b> You can only shift if you have enough terms left in your MRP to finish CIM without needing an extension (3.13.1.3). You need at least 2 terms in your previous program before shifting, and you can shift only once (3.13). Grades from your previous Benilde program are included in your CGPA for honors (6.3.5). Your MRP is generally counted from when you first entered Benilde, so confirm your remaining terms with the Registrar's Office.</p>
+      <p><b>If you are a transferee.</b> Apply for credit transfer by the end of your 2nd term; no credit transfer is granted after that (3.17). At most 20% of the degree's units can be credited, and all major and institutional courses must be taken at Benilde (3.17.1.6–3.17.1.7). For CIM, transferred courses need a grade of at least 2.0 (80%). Credited units don't carry grades into your CGPA, but failing marks or withdrawals from your previous school disqualify you from honors (3.17.1.9). Ask the Registrar's Office how your credited units affect your MRP.</p>
+      <p><b>What to do now.</b></p>
+      <ol class="pos">
+        <li>Use this checker to mark everything you've passed, including credited courses.</li>
+        <li>Count the terms you've already used, including any LOA or AWOL terms.</li>
+        <li>Compare your remaining courses with your remaining terms. Watch the prerequisite chains (AMINTRO, RESMETO → PRACRE1 → PRACRE2, AMLANG1 → AMLANG2) because these can't be taken in the same term.</li>
+        <li>If it looks tight, book a consultation with your Academic Adviser early, before you need an overload, special class, or extension.</li>
+      </ol>
+    </details>
+    <details><summary>Graduation requirements</summary>
+      <p>Besides all academic courses, you must complete non-academic and institutional requirements: retreats and recollections, the Initial Interview, CSBWELL (ID 125 onwards), the Exit Survey Form, an online resume on the DLS-CSB Career Portal, and any restorative discipline or community service obligations. Clearances are due the week before final exams of your last term (6.1).</p>
+    </details>
+    <details><summary>ABCIM program outcomes</summary>
+      <ol class="pos"><li><b>PO1.</b> Generate innovative ideas and best practices in leadership, management, and entrepreneurship to recognize co-creation opportunities in the ecosystem.</li>
+      <li><b>PO2.</b> Apply creative industries management practices to create and evaluate policies and projects in managing the arts, culture, and creativity that contribute to social change and economic development.</li>
+      <li><b>PO3.</b> Utilize technologies and systems to facilitate creative expressions.</li>
+      <li><b>PO4.</b> Display ethical values in the conduct of business.</li></ol>
+      <p>Each course's details show which outcomes it supports, based on the program's curriculum map.</p>
+    </details>
+  </section>
+
+  <footer>
+    <p>This checker is a planning guide based on the A.Y. 2025–2026 ABCIM flowchart (still in use for S.Y. 2026–2027 unless changes are announced) and the ABCIM/ABAM approved electives list. Your official evaluation is done by the Registrar's Office and your Academic Adviser. Your ticks are saved only in this browser on this device.</p>
+    <p>For the full rules, see the <a href="https://drive.google.com/file/d/1vjZXdY6WL3KZjLhbW7V1bOlTUyt5U_6o/view?ts=6a9610a1" target="_blank" rel="noopener noreferrer">Benilde Student Handbook (A.Y. 2025–2030)</a>.</p>
+    <p>Questions? Book a consult with your Academic Adviser, Ms. Vim Calmerin, at <a href="mailto:valinemae.calmerin@benilde.edu.ph">valinemae.calmerin@benilde.edu.ph</a>. Consultations are on Mondays by appointment; allow 24–48 hours for email replies.</p>
+    <p>For program concerns, you may also reach the CIM Program Chairperson, Ms. Lara Acuin, at <a href="mailto:paula.acuin@benilde.edu.ph">paula.acuin@benilde.edu.ph</a>.</p>
+    <p class="credit">CIM Flowchart Checker created by <b>Ms. Valine Mae "Vim" D. Calmerin, MBA</b>, Academic Adviser, AB Creative Industries Management Program, School of Arts, Culture, and Performance, De La Salle-College of Saint Benilde. October 2026.</p>
+  </footer>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="assertive"></div>
+<button class="totop" id="toTop" aria-label="Back to top" hidden>↑ Top</button>
+<div class="scrim" id="scrim"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="shTitle">
+  <header>
+    <div><h2 id="shTitle"></h2><p class="ttl" id="shSub"></p></div>
+    <button class="x" id="shClose" aria-label="Close">×</button>
+  </header>
+  <div class="content" id="shBody"></div>
+</div>
+
+<script>
+(function(){
+const CAT_NAME={ge:"General Education",pe:"Physical Education",nstp:"NSTP",inst:"Institutional",core:"Core",major:"Major",prac:"Practicum",elec:"Elective"};
+const AMINTRO_REQ=["AMORGMA","AMLEADR","AMFINMA","AMMKTPR","AMPROJM","AMLAWPO","AMTOURS","AMDIPLO","AMEDUCO","AMIDEAS","AMCRITM","CRENTRE"];
+
+// [code,title,units,credit,cat,term,slot]
+const RAW=[
+["AMINTRO","Arts Management and the Creative Industries",3,1,"major",1],
+["BICHECO","Bible and Church",3,1,"inst",1],
+["READHIS","Readings in Philippine History",3,1,"ge",1],
+["CSBLIFE","College of St. Benilde Student Life",3,0,"inst",1],
+["MATWRLD","Mathematics in the Modern World",3,1,"ge",1],
+["ARTAPRI","Art Appreciation",3,1,"ge",1],
+["PATHFT1","Physical Activity Towards Health and Fitness 1",2,1,"pe",1],
+["AMORGMA","Organizational Management for Artistic and Creative Industries",3,1,"major",2],
+["VIDGRAP","Video, Computer Graphics, and Photography Techniques",3,1,"major",2],
+["FSARTH1","History of Art 1",3,1,"core",2],
+["CONWORL","The Contemporary World",3,1,"ge",2],
+["CRITHNK","Critical and Creative Thinking",3,1,"inst",2],
+["UNDSELF","Understanding the Self",3,1,"ge",2],
+["CREAWRI","Creative Writing",3,1,"major",3],
+["FSARTH2","History of Art 2",3,1,"core",3],
+["JORIZAL","Life and Works of Rizal",3,1,"ge",3],
+["ASEANST","ASEAN Studies",3,1,"inst",3],
+["REEXECO","General Education Elective 1 (GELECT1)",3,1,"ge",3,"ge1"],
+["SCITECH","Science, Technology, and the Society",3,1,"ge",3],
+["PATHFT2","Physical Activity Towards Health and Fitness 2",2,1,"pe",3],
+["CRENTRE","Creative Entrepreneurship and Business Planning",3,1,"major",4],
+["PRINAC-","Principles of Accounting",3,1,"major",4],
+["FSTHEOR","Theory in Art and Design",3,1,"core",4],
+["PURPCOM","Purposive Communication",3,1,"ge",4],
+["IETHICS","Ethics",3,1,"ge",4],
+["NSTP001","National Service Training Program 1",3,0,"nstp",4,"nstp1"],
+["PATHFT3","Physical Activity Towards Health and Fitness 3",2,1,"pe",4,"pe3"],
+["AMLEADR","Leadership and Strategic Planning for Artistic and Creative Industries",3,1,"major",5],
+["AMANTRO","Current Studies in Anthropology",3,1,"major",5],
+["AMCULTR","Philippine Culture and Society",3,1,"major",5],
+["AMELEC1","Arts Management Elective 1 (History or Theory of Art Form)",3,1,"elec",5,"am13"],
+["AMELEC2","Arts Management Elective 2 (History or Theory of Art Form)",3,1,"elec",5,"am13"],
+["GELECT2","General Education Elective 2",3,1,"ge",5,"ge2"],
+["PATHFT4","Physical Activity Towards Health and Fitness 4",2,1,"pe",5,"pe4"],
+["AMCRITM","Art Theory, Criticism and Censorship",3,1,"major",6],
+["AMFINMA","Financial Management for Artistic and Creative Industries",3,1,"major",6],
+["AMMKTPR","Marketing and Public Relations for Artistic and Creative Industries",3,1,"major",6],
+["AMELEC3","Arts Management Elective 3 (History or Theory of Art Form)",3,1,"elec",6,"am13"],
+["AMELEC4","Arts Management Elective 4 (Production)",3,1,"elec",6,"am46"],
+["NSTP002","National Service Training Program 2",3,0,"nstp",6,"nstp2"],
+["AMTOURS","Cultural Tourism",3,1,"major",7],
+["AMDIPLO","Cultural Diplomacy",3,1,"major",7],
+["AMPROJM","Project Management for Artistic and Creative Industries",3,1,"major",7],
+["AMLANG1","Foreign Language 1",3,1,"major",7],
+["RESMETO","Research Methods and Computer Applications",3,1,"major",7],
+["AMELEC5","Arts Management Elective 5 (Production)",3,1,"elec",7,"am46"],
+["AMEDUCO","Arts Education and Community Outreach",3,1,"major",8],
+["AMIDEAS","History of Ideas",3,1,"major",8],
+["AMELEC6","Arts Management Elective 6 (Production)",3,1,"elec",8,"am46"],
+["AMLANG2","Foreign Language 2",3,1,"major",8],
+["PRACRE1","Thesis Ideation and Proposal",3,1,"major",8],
+["GELECT3","General Education Elective 3",3,1,"ge",8,"ge3"],
+["CSBGRAD","College of St. Benilde Graduating Students",1,0,"inst",8],
+["AMLAWPO","Law and Policy for Artistic and Creative Industries",3,1,"major",9],
+["AMPRACT","Arts Management Internship",3,1,"prac",9],
+["TECHWRI","Technical Writing",3,1,"major",9],
+["PRACRE2","Thesis Defense",3,1,"major",9],
+["MARFRET","Marriage and Family Life",3,1,"inst",9]
+];
+const COURSES=RAW.map(r=>({code:r[0],title:r[1],units:r[2],credit:!!r[3],cat:r[4],term:r[5],slot:r[6]||null,prereq:[]}));
+const BY={};COURSES.forEach(c=>BY[c.code]=c);
+AMINTRO_REQ.forEach(k=>BY[k].prereq.push("AMINTRO"));
+BY.AMLANG2.prereq.push("AMLANG1");
+BY.PRACRE1.prereq.push("RESMETO");
+BY.PRACRE2.prereq.push("RESMETO","PRACRE1");
+BY.PATHFT2.prereq.push("PATHFT1");
+BY.PATHFT3.prereq.push("PATHFT2");
+BY.PATHFT4.prereq.push("PATHFT2");
+BY.CSBGRAD.prereq.push("CSBLIFE");
+BY.AMPROJM.sl=true;
+const NOTES={
+  RESMETO:"Can only be taken beginning your 3rd academic year. It is a prerequisite to PRACRE1 and PRACRE2.",
+  AMINTRO:"Prerequisite to AMORGMA, AMLEADR, AMFINMA, AMMKTPR, AMPROJM, AMLAWPO, AMTOURS, AMDIPLO, AMEDUCO, AMIDEAS, AMCRITM, and CRENTRE.",
+  AMLANG1:"Prerequisite to AMLANG2. Some choices: Spanish, French, Korean, Italian, Filipino Sign Language, among others.",
+  AMLANG2:"Continue the same foreign language you took in AMLANG1. Some choices: Spanish, French, Korean, Italian, Filipino Sign Language, among others.",
+  AMPRACT:"Requires a minimum of 300 internship hours. Internship concerns go to the OJT Adviser.",
+  AMPROJM:"Service Learning course.",
+  REEXECO:"GELECT1 (Social Sciences and Philosophy): Religious Experience and Spirituality. The flowchart's course titles sheet lists it as REEXPI.",
+  GELECT2:"GELECT2 (Math, Science, and Technology): choose Ecology and Sustainability (ECOLSUS) or Disaster Management (DSRMNGT, also written DISMNGT in the program specification).",
+  GELECT3:"GELECT3 (Arts and Humanities): choose The Art of Storytelling (LITSTOR) or Communication in the New Media (COMNMED).",
+  PRACRE1:"Requires RESMETO.",
+  PRACRE2:"Requires PRACRE1, and RESMETO per the flowchart notes.",
+  CSBGRAD:"Requires CSBLIFE. Graded Pass or Fail.",
+  CSBLIFE:"Graded Pass or Fail.",
+  NSTP001:"Choose one track: LTS, CWTS, or ROTC.",
+  NSTP002:"Usually continues the track you chose in NSTP001."
+};
+// Program outcomes (ABCIM Program Specification 2023) and the curriculum map
+const POS={PO1:"Generate innovative ideas and best practices in leadership, management, and entrepreneurship to recognize co-creation opportunities in the ecosystem",
+PO2:"Apply creative industries management practices to create and evaluate policies and projects in managing the arts, culture, and creativity that contribute to social change and economic development",
+PO3:"Utilize technologies and systems to facilitate creative expressions",
+PO4:"Display ethical values in the conduct of business"};
+const CMAP={AMINTRO:"1234",AMORGMA:"124",AMLEADR:"124",AMFINMA:"124",AMMKTPR:"1234",AMPROJM:"1234",AMLAWPO:"24",RESMETO:"1234",PRACRE1:"34",PRACRE2:"34",CREAWRI:"134",CRENTRE:"1234","PRINAC-":"24",AMCULTR:"13",AMANTRO:"13",AMCRITM:"123",AMTOURS:"123",AMDIPLO:"123",AMEDUCO:"3",AMIDEAS:"123",TECHWRI:"234",AMPRACT:"1234",VIDGRAP:"1234",AMLANG1:"23",AMLANG2:"23",AMELEC1:"1234",AMELEC2:"1234",AMELEC3:"1234",AMELEC4:"1234",AMELEC5:"1234",AMELEC6:"1234"};
+function gradingOf(c){
+  if(c.code==="CSBLIFE"||c.code==="CSBGRAD") return "Pass (P) or Fail (F); not included in GPA";
+  if(c.cat==="nstp") return "Numerical grade, but not included in GPA";
+  if(["AMPRACT","PRACRE1","PRACRE2"].includes(c.code)) return "Numerical grade; may receive a deferred grade (9.9)";
+  return "Numerical grade, 4.000 to 1.000 (below 70% is R)";
+}
+const ALIAS={DISMNGT:"DSRMNGT"};
+
+// Approved choices. MP = Music Production (2 units each; two are needed for one AMELEC). B = AY 2023-24 onwards only.
+const MP={WESTMUS:1,PHILMUS:1,WRLDMUS:1,PCOPOMU:1,BUSIMUS:1};
+const BATCH={AMCURTP:1,AMINFOA:1,AMTALEN:1,AMDIGIT:1,AMGASTR:1};
+const VIA={VOGUING:"Taken via ELECTI4",SOUNDES:"Taken via ELECTI4",LIGHTDS:"Taken via ELECTI4",ROBOTIX:"Taken via IDLEC-1",TECHMAN:"Taken via IDLEC-2",MPROCES:"Taken via IDLEC-2",FSDRWG1:"Equivalent to FREEHAND",FSDRWG2:"Prerequisite: FSDRWG1"};
+const AM13=[
+["Dance","PHILANT","Philanthropy in the Arts"],["Dance","HISTOPH","History of Philippine Dance"],["Dance","INTROER","Introduction to Theater"],
+["Fashion Design and Merchandising","PROFES1","Design Profession and Code of Ethics"],
+["Film","FLMESTER","Masters of Cinema"],["Film","FLSDOCM","Masters of Documentary Filmmaking"],
+["Music Production","WESTMUS","History of Western Music"],["Music Production","PHILMUS","Philippine Music"],["Music Production","WRLDMUS","World Music"],["Music Production","PCOPOMU","Philippine Contemporary Popular Music"],
+["Photography","HISTPHO","History of Photography"],["Photography","LOOKPHO","Looking at Photographs"],["Photography","PHOTREN","Trends in Photography"],["Photography","FILFOTO","Philippine Photography"],
+["Production Design","INTPROD","Introduction to Production Design"],
+["Diplomacy, Governance, and International Affairs","FOUNDIP","Foundations of Diplomacy"],
+["Arts Management and Creative Industries","EVENMAN","Events Management"]
+];
+const AM46=[
+["Arts Management and Creative Industries","EVENMAN","Events Management"],["Arts Management and Creative Industries","AMCURTP","Curatorial Practice"],["Arts Management and Creative Industries","AMINFOA","Information and Archival Management"],["Arts Management and Creative Industries","AMTALEN","Talent Management for Artistic and Creative Industries"],["Arts Management and Creative Industries","AMDIGIT","Digital and Interactive Media"],["Arts Management and Creative Industries","AMGASTR","Gastronomy and Creative Industries"],
+["Architecture and Interior Design","ADESPRN","Architectural Design Elements and Principles"],["Architecture and Interior Design","INDPIPC","Heritage of Philippine Interiors, Preservation, and Conservation"],["Architecture and Interior Design","INDIVISM","Visual Merchandising"],
+["Animation","SETDSGN","Set Design for Stop Motion"],["Animation","3DSCRIG","3D Sculpting and Rigging"],
+["Dance","ASIANDA","Asian Dance"],["Dance","VOGUING","Street Dance Voguing"],["Dance","SOUNDES","Sound Design"],["Dance","LIGHTDS","Light Design"],["Dance","MODERN3","Modern 3"],
+["Theater Arts and Production Design","THPROD1","Theater Production 1"],["Theater Arts and Production Design","MTODTHR","Production Methods for Theater"],
+["Music Production","BUSIMUS","Music Business"],
+["Multimedia Arts","MFEBWEB","Basic Web Development"],["Multimedia Arts","MFEGRAP","Basic Computer Graphics"],["Multimedia Arts","MFEDIGM","Digital Marketing"],["Multimedia Arts","MFEINMP","Introduction to Multimedia Programming"],
+["Fashion Design and Merchandising","FDMTXT1","Textile Science and Surface Design"],
+["Design Foundation and Fine Arts","FSPUPET","Puppetry"],["Design Foundation and Fine Arts","FSDRWG1","Drawing 1: Basic Form and Space"],["Design Foundation and Fine Arts","FSDRWG2","Drawing 2: Figure Drawing"],["Design Foundation and Fine Arts","PRINTM1","Basic Printmaking"],
+["Industrial Design","ROBOTIX","Robotics and Mechatronics"],["Industrial Design","TECHMAN","Technology Management"],["Industrial Design","MPROCES","Manufacturing Processes and Technology"]
+];
+const CHOICES={
+  am13:AM13, am46:AM46,
+  ge1:[["GELECT1","REEXPI","Religious Experience and Spirituality"]],
+  ge2:[["GELECT2","ECOLSUS","Ecology and Sustainability"],["GELECT2","DSRMNGT","Disaster Management"]],
+  ge3:[["GELECT3","LITSTOR","The Art of Storytelling"],["GELECT3","COMNMED","Communication in the New Media"]],
+  pe3:[["PATHFT3","PATHF3D","Dance: Popularized Dance"],["PATHFT3","PATHF3G","Group Exercise: Dance Aerobics"],["PATHFT3","PATHF3M","Martial Arts: Arnis"],["PATHFT3","PATHF3S","Sports: Fencing, Badminton, Table Tennis"],["PATHFT3","PATHF3O","Outdoor and Adventure: Philippine Games, Aquatics"]],
+  pe4:[["PATHFT4","PATHF4D","Dance"],["PATHFT4","PATHF4G","Group Exercise: Yoga"],["PATHFT4","PATHF4M","Martial Arts: Judo"],["PATHFT4","PATHF4S","Sports: Basketball, Futsal, Volleyball"],["PATHFT4","PATHF4O","Outdoor and Adventure: Walking for Fitness"]],
+  nstp1:[["NSTP","NSTPLT1","Literacy Training Service 1"],["NSTP","NSTPCW1","Civic Welfare Training Service 1"],["NSTP","NSTPRO1","Reserve Officers' Training Corps 1"]],
+  nstp2:[["NSTP","NSTPLT2","Literacy Training Service 2"],["NSTP","NSTPCW2","Civic Welfare Training Service 2"],["NSTP","NSTPRO2","Reserve Officers' Training Corps 2"]]
+};
+const SLOT_LABEL={am13:"AMELEC 1–3 (History, Theory, or Form)",am46:"AMELEC 4–6 (Production)",ge1:"GELECT1",ge2:"GELECT2",ge3:"GELECT3",pe3:"PATHFT3",pe4:"PATHFT4",nstp1:"NSTP001",nstp2:"NSTP002"};
+const isAM=s=>s==="am13"||s==="am46";
+const isGE=s=>s==="ge2"||s==="ge3";           // GELECT2 and GELECT3 need a choice; GELECT1 is fixed (REEXECO)
+const needsPick=s=>isAM(s)||isGE(s);
+const kindOf=s=>!s?"":isAM(s)?"am":/^ge/.test(s)?"ge":/^pe/.test(s)?"pe":/^nstp/.test(s)?"nstp":"";
+const KTAG={am:"AMELEC",ge:"GE ELECTIVE",pe:"PE",nstp:"NSTP"};
+function titleOf(code){for(const k in CHOICES){const f=CHOICES[k].find(x=>x[1]===code);if(f)return f[2];}return "";}
+
+// state
+const KEY="cim-flowchart-2526-v1";
+let S={status:{},pick:{},pick2:{},other:{},year:""};
+try{const raw=localStorage.getItem(KEY);if(raw){const p=JSON.parse(raw);S=Object.assign(S,p);}}catch(e){}
+const snap=()=>JSON.stringify([S.cur||{},S.status,S.pick,S.pick2,S.other,S.year,S.extra||[],S.when||{},S.pref||{}]);
+Object.keys(S.status||{}).forEach(k=>{if(S.status[k]==="fail")delete S.status[k];});
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function evalSlot(c){
+  // returns {state:'none'|'ok'|'incomplete'|'nocount', msgs:[]}
+  if(!c.slot) return null;
+  const p=S.pick[c.code];
+  const out={state:"none",msgs:[]};
+  if(!p) return out;
+  if(p==="OTHER"){out.state="nocount";out.msgs.push({t:"warn",m:`"${S.other[c.code]||"This course"}" is not on the approved list for ${SLOT_LABEL[c.slot]}. It won't be credited to ${c.code}.`});return out;}
+  out.state="ok";
+  if(MP[p]){
+    const p2=S.pick2[c.code];
+    if(!p2){out.state="incomplete";out.msgs.push({t:"warn",m:"Music Production electives are only 2 units each. 3 units of AMELEC = 4 units of Music Production, so you need two different Music Production electives (2 + 2 = 4 units). You have 2 of 4 units so far. Choose the second one below."});}
+    else if(!MP[p2]||p2===p){out.state="incomplete";out.msgs.push({t:"warn",m:"The second course must be a different Music Production elective."});}
+  }
+  if(BATCH[p]) out.msgs.push({t:"note",m:`${p} is offered only for CIM students enrolled from AY 2023–2024 onwards (Batch 123 and younger).`});
+  if(VIA[p]) out.msgs.push({t:"note",m:`${p}: ${VIA[p]}.`});
+  if(p==="FSDRWG2"){const has=Object.values(S.pick).includes("FSDRWG1");if(!has) out.msgs.push({t:"note",m:"FSDRWG2 requires FSDRWG1. Make sure you've taken it or plan to."});}
+  if(isAM(c.slot)){
+    const dup=COURSES.filter(o=>o!==c&&isAM(o.slot)&&(S.pick[o.code]===p||S.pick2[o.code]===p||(MP[p]&&S.pick2[c.code]&&S.pick[o.code]===S.pick2[c.code]))).map(o=>o.code);
+    if(dup.length){out.state="incomplete";out.msgs.push({t:"warn",m:`The same elective is also listed under ${dup.join(", ")}. One course can only be credited once.`});}
+  }
+  return out;
+}
+function evalCourse(c){
+  const st=S.status[c.code];
+  const missing=c.prereq.filter(p=>S.status[p]!=="done");
+  const yr=S.year?parseInt(S.year,10):0;
+  const yearBlock=c.code==="RESMETO"&&yr&&yr<3;
+  const locked=missing.length>0||yearBlock;
+  const slot=evalSlot(c);
+  const warns=[];
+  if(st==="done"&&missing.length) warns.push(`Marked passed, but prerequisite ${missing.join(", ")} is not ticked.`);
+  if(st==="plan"&&missing.length) warns.push(`Planned, but you still need ${missing.join(", ")} first.`);
+  if(st==="enr"&&missing.length){const same=missing.filter(m=>S.status[m]==="enr");
+    warns.push(same.length?`You can't take ${c.code} in the same term as its prerequisite ${same.join(", ")}.`:`Marked as currently enrolled, but prerequisite ${missing.join(", ")} is not ticked as passed.`);}
+  if(st&&yearBlock) warns.push("RESMETO can only be taken beginning your 3rd academic year.");
+  if(slot){
+    if(slot.state==="nocount"||slot.state==="incomplete") warns.push(...slot.msgs.filter(m=>m.t==="warn").map(m=>m.m));
+    if((st==="done"||st==="enr")&&slot.state==="none"&&needsPick(c.slot)) warns.push(isGE(c.slot)?`Choose which ${c.code} course you took (${CHOICES[c.slot].map(x=>x[1]).join(" or ")}).`:"Choose which approved elective you took for this slot.");
+  }
+  const disp=st==="done"?"done":st==="enr"?"enr":st==="plan"?"plan":locked?"lock":"open";
+  return {st,disp,missing,yearBlock,locked,slot,warns};
+}
+
+const YEARS=[["Freshman",[1,2,3]],["Sophomore",[4,5,6]],["Junior",[7,8,9]]];
+// render board: same positions as the official flowchart
+const yearsEl=document.getElementById("years");
+const GRID=[
+["AMINTRO","AMORGMA","CREAWRI","CRENTRE","AMLEADR","AMCRITM","AMTOURS","AMEDUCO","AMLAWPO"],
+["BICHECO","VIDGRAP","FSARTH2","PRINAC-","AMANTRO","AMFINMA","AMDIPLO","AMIDEAS","AMPRACT"],
+["READHIS","FSARTH1","JORIZAL","FSTHEOR","AMCULTR","AMMKTPR","AMPROJM","AMELEC6","TECHWRI"],
+["CSBLIFE","CONWORL","ASEANST","PURPCOM","AMELEC1","AMELEC3","AMLANG1","AMLANG2",null],
+["MATWRLD","CRITHNK","REEXECO","IETHICS","AMELEC2","AMELEC4","RESMETO","PRACRE1","PRACRE2"],
+["ARTAPRI","UNDSELF","SCITECH","NSTP001","GELECT2","NSTP002","AMELEC5","GELECT3",null],
+["PATHFT1","~","PATHFT2","PATHFT3","PATHFT4",null,null,"CSBGRAD","MARFRET"]
+];
+// unit accounting for AMELEC slots: regular electives are 3 units; Music Production electives are 2 units each,
+// and two of them (4 units) are needed to be credited as one 3-unit AMELEC.
+function unitInfo(c){
+  if(!isAM(c.slot)) return null;
+  const p=S.pick[c.code];
+  if(!p) return {taken:0,credited:0,short:"",text:"No elective chosen yet: 0 of 3 units."};
+  if(p==="OTHER") return {taken:0,credited:0,short:"0/3u",text:"Not on the approved list: 0 of 3 AMELEC units credited."};
+  if(MP[p]){
+    const p2=S.pick2[c.code];const ok=!!(p2&&MP[p2]&&p2!==p);
+    return ok?{mp:true,taken:4,credited:3,short:"4u=3",text:`${p} (2 units) + ${p2} (2 units) = 4 Music Production units, credited as 3 AMELEC units.`}
+             :{mp:true,taken:2,credited:0,short:"2/4u",text:`${p} (2 units) = 2 of the 4 Music Production units needed. 0 of 3 AMELEC units credited until you add a second Music Production elective.`};
+  }
+  return {taken:3,credited:3,short:"",text:`${p} (3 units) = 3 AMELEC units.`};
+}
+// planned school year and term for a planned course
+function planSYs(){const now=new Date();const y0=now.getMonth()>=7?now.getFullYear():now.getFullYear()-1;const a=[];for(let y=y0;y<y0+5;y++)a.push(`${y}–${y+1}`);return a;}
+function whenTxt(code){const w=(S.when||{})[code];return w&&w.sy&&w.term?`${w.sy}, ${w.term}`:"";}
+function tileHTML(c){
+  const e=evalCourse(c);
+  const p=S.pick[c.code];
+  let pickLbl="";
+  if(p) pickLbl=p==="OTHER"?(S.other[c.code]||"Other course"):p+(S.pick2[c.code]?"+"+S.pick2[c.code]:"");
+  const ui=unitInfo(c); if(ui&&ui.short) pickLbl+=" ("+ui.short+")";
+  const u=c.credit?c.units:`(${c.units})`;
+  const stTxt=e.disp==="done"?"Passed":e.disp==="enr"?"Currently enrolled":e.disp==="plan"?"Planned":e.disp==="open"?"Open":"Locked";
+  const kk=kindOf(c.slot);
+  return `<div class="tile cat-${c.cat} st-${e.disp}${kk==="am"||kk==="ge"?" k-"+kk:""}${c.sl?" sl":""}${e.warns.length?" has-warn":""}" data-code="${c.code}">
+    <button class="check" data-act="toggle" aria-pressed="${e.st==="done"}" aria-label="${e.st==="done"?"Unmark":"Mark"} ${c.code} as passed"><i>${e.st==="done"?"✓":""}</i></button>
+    ${e.disp==="lock"?'<span class="lockic" aria-hidden="true">🔒</span>':""}${e.disp==="done"?'<span class="passtag">Passed</span>':""}${e.disp==="enr"?'<span class="enrtag">Enrolled</span>':""}
+    <button class="body" data-act="open" title="${esc(c.title)}" aria-label="${c.code}, ${esc(c.title)}. ${stTxt}${e.warns.length?", needs attention":""}. Open details">
+      <span class="code">${c.sl?"*":""}${c.code}</span>
+      <span class="u">${u}</span>
+      ${pickLbl?`<span class="pick">${esc(pickLbl)}</span>`:""}
+    </button></div>`;
+}
+function renderBoard(){
+  let h=YEARS.map(([name,terms])=>`<div class="yr"><div class="yl">${name.toUpperCase()}</div><div class="tn">${terms.map(t=>`<span>${t}</span>`).join("")}</div></div>`).join("");
+  GRID.forEach(row=>row.forEach(code=>{
+    if(code==="~") h+='<div class="empty-cell conn" aria-hidden="true"></div>';
+    else if(!code) h+='<div class="empty-cell" aria-hidden="true"></div>';
+    else h+=tileHTML(BY[code]);
+  }));
+  yearsEl.innerHTML=h;
+}
+
+// sidebar
+function geStatus(c){
+  // returns {label, verdict, cls}
+  const st=S.status[c.code];const tag=st==="done"?"done":st==="plan"?"planned":"";
+  if(c.slot==="ge1") return {label:"REEXECO, Religious Experience and Spirituality"+(tag?" · "+tag:""),verdict:st==="done"?"Counts":"Required",ok:st==="done"};
+  const p=S.pick[c.code];
+  if(!p) return {label:"Not chosen yet"+(tag?" · "+tag:""),verdict:st==="done"?"Choose course":"",ok:false,warn:st==="done"};
+  if(p==="OTHER") return {label:(S.other[c.code]||"Other course")+(tag?" · "+tag:""),verdict:"Won't count",ok:false,warn:true};
+  return {label:p+" "+titleOf(p)+(tag?" · "+tag:""),verdict:"Counts",ok:st==="done"};
+}
+function geSummaryHTML(){
+  const ge=["REEXECO","GELECT2","GELECT3"].map(k=>BY[k]);
+  const done=ge.filter(c=>S.status[c.code]==="done"&&(c.slot==="ge1"||evalCourse(c).slot.state==="ok")).length;
+  return `<h3 class="khead k-ge"><span class="ktag">GE ELECTIVE</span>General Education electives</h3><p class="mini" style="margin:0 0 6px">${done} of 3 General Education electives passed and credited.</p><div class="catrows">`+
+    ge.map(c=>{const g=geStatus(c);const name=c.code==="REEXECO"?"GELECT1":c.code;
+      const v=g.verdict?`<b style="color:${g.warn?"var(--warn)":g.verdict==="Counts"?"var(--ok)":"var(--muted)"}">${g.verdict}</b>`:"";
+      return `<div class="catrow cat-ge" style="grid-template-columns:auto 1fr auto"><span><b>${name}</b></span><span class="mini">${esc(g.label)}</span><span>${v}</span></div>`;}).join("")+"</div>";
+}
+function renderSide(){
+  const credTotal=COURSES.filter(c=>c.credit).reduce((a,c)=>a+c.units,0);
+  let credDone=0;const issues=[];
+  COURSES.forEach(c=>{
+    const e=evalCourse(c);
+    const counts=e.st==="done"&&(!c.slot||!needsPick(c.slot)||e.slot.state==="ok");
+    if(c.credit&&counts) credDone+=c.units;
+    e.warns.forEach(w=>issues.push({code:c.code,m:w}));
+  });
+  document.getElementById("unitsBig").innerHTML=`${credDone} <small>/ ${credTotal}</small>`;
+  document.getElementById("unitsBar").style.width=(credDone/credTotal*100)+"%";
+  const nc=COURSES.filter(c=>!c.credit);
+  document.getElementById("unitsMini").textContent=`${credTotal} credited units plus (10) non-credit units make up the program's 168 units. Music Production electives are 2 units each; two (4 units) count as one 3-unit AMELEC. Non-credit requirements done: ${nc.filter(c=>S.status[c.code]==="done").length} of ${nc.length} (CSBLIFE, NSTP001, NSTP002, CSBGRAD).`;
+  const cats=["major","core","elec","ge","inst","pe","nstp","prac"];
+  document.getElementById("catRows").innerHTML=cats.map(k=>{
+    const list=COURSES.filter(c=>c.cat===k);
+    const d=list.filter(c=>{const e=evalCourse(c);return e.st==="done"&&(!c.slot||!needsPick(c.slot)||e.slot.state==="ok");}).length;
+    return `<div class="catrow cat-${k}"><span class="dot"></span><span>${CAT_NAME[k]}</span><span>${d}/${list.length}</span></div>`;
+  }).join("");
+
+  // electives
+  const am=COURSES.filter(c=>isAM(c.slot));
+  const rows=am.map(c=>{
+    const e=evalCourse(c);const p=S.pick[c.code];
+    let v;
+    if(!p) v='<span class="mini">Not chosen yet</span>';
+    else if(e.slot.state==="nocount") v=`<b style="color:var(--warn)">Won't count</b>`;
+    else if(e.slot.state==="incomplete") v=`<b style="color:var(--warn)">Incomplete</b>`;
+    else v=`<b style="color:var(--ok)">Counts</b>`;
+    const lbl=p?(p==="OTHER"?esc(S.other[c.code]||"Other"):p+(S.pick2[c.code]?"+"+S.pick2[c.code]:"")):"";
+    const st=e.st==="done"?"done":e.st==="plan"?"planned"+(whenTxt(c.code)?" for "+whenTxt(c.code):""):"";
+    const ui=unitInfo(c);const un=p?(ui.mp?`${ui.taken}/4 MP units`:p==="OTHER"?"0/3 units":"3 units"):"";
+    return `<div class="catrow cat-elec" style="grid-template-columns:auto 1fr auto"><span><b>${c.code}</b></span><span class="mini">${lbl}${st?" · "+st:""}${un?"<br>"+un:""}</span><span>${v}</span></div>`;
+  }).join("");
+  const counted=am.filter(c=>evalCourse(c).slot.state==="ok"&&S.status[c.code]==="done").length;
+  const credU=am.filter(c=>S.status[c.code]==="done").reduce((a,c)=>a+unitInfo(c).credited,0);
+  const takenU=am.filter(c=>S.status[c.code]==="done").reduce((a,c)=>a+unitInfo(c).taken,0);
+  document.getElementById("elecSum").innerHTML=`<h3 class="khead k-am"><span class="ktag">AMELEC</span>Arts Management electives</h3><p class="mini" style="margin:0 0 6px">${counted} of 6 Arts Management electives passed and credited: <b>${credU} of 18 AMELEC units</b>${takenU!==credU?` (${takenU} units taken; Music Production counts 4 units as 3)`:""}.</p><div class="catrows">${rows}</div>${geSummaryHTML()}`;
+
+  const notes=[];
+  if(!S.year) notes.push({m:"Choose your current year at the top so RESMETO's 3rd-year rule can be checked.",note:1});
+  document.getElementById("issues").innerHTML=(issues.length||notes.length)?
+    issues.map(i=>`<li><b>${i.code}</b>${esc(i.m)}</li>`).join("")+notes.map(n=>`<li class="note">${n.m}</li>`).join("")
+    :'<p class="empty">Nothing to fix right now.</p>';
+
+  // next up: open, not done/planned, lowest terms first
+  const open=COURSES.filter(c=>{const e=evalCourse(c);return e.disp==="open";}).sort((a,b)=>a.term-b.term);
+  const firstTerms=[...new Set(open.map(c=>c.term))].slice(0,2);
+  const nx=open.filter(c=>firstTerms.includes(c.term));
+  document.getElementById("nextUp").innerHTML=!S.year?'<p class="empty">Choose your year in step 1 to see what\'s open for you.</p>':nx.length?nx.map(c=>`<button class="chip cat-${c.cat}" data-code="${c.code}" title="${esc(c.title)}"><span class="nt">Term ${c.term}</span>${c.code}</button>`).join(""):'<p class="empty">Everything open is either passed or planned.</p>';
+}
+
+// back of the flowchart: course titles and elective choices
+const ORD=["1ST","2ND","3RD","4TH","5TH","6TH","7TH","8TH","9TH"];
+function choiceRow(k,x){
+        const code=x[1];const where=whereIs(code);
+        const tags=[];if(MP[code])tags.push("2 units");if(BATCH[code])tags.push("AY 2023–24+");if(VIA[code])tags.push(VIA[code]);
+        let right;
+        if(k==="ge1") right='<span class="in">Required as GELECT1</span>';
+        else if(isGE(k)&&S.pick[COURSES.find(x=>x.slot===k).code]&&!where) right=`<span class="in" style="color:#555">${COURSES.find(x=>x.slot===k).code} already filled</span>`;
+        else if(where){const t=where.split(", ")[0];const done=S.status[t]==="done";const enr=S.status[t]==="enr";
+          const wt=!done&&!enr?whenTxt(t):"";
+          right=`<span class="acts"><span class="in">${done?"✓ Taken":enr?"Enrolled now":"Planned"}: ${where}${wt?` <span style="font-weight:400">(${wt})</span>`:(!done&&!enr?' <span style="font-weight:400;color:#B3261E">(set when)</span>':"")}</span>${done?"":`<button class="add taken" data-mark="${t}">Mark as taken</button>`}<button class="rm" data-remove="${code}" data-from="${t}" aria-label="Remove ${code} from ${t}">Remove</button></span>`;}
+        else right=`<span class="acts"><button class="add taken" data-add="${code}" data-slot="${k}" data-st="done">I've taken it</button><button class="add enr" data-add="${code}" data-slot="${k}" data-st="enr">Enrolled now</button><button class="add" data-add="${code}" data-slot="${k}" data-st="plan">Add to plan</button></span>`;
+        return `<li data-ccode="${code}"><span class="nm"><b>${code}</b> ${esc(x[2])}${tags.length?`<span class="tag">${esc(tags.join(" · "))}</span>`:""}</span>${right}</li>`;
+}
+function renderBack(){
+  let h="";
+  for(let t=1;t<=9;t++){
+    const list=COURSES.filter(c=>c.term===t);
+    const tot=list.filter(c=>c.credit).reduce((a,c)=>a+c.units,0), nc=list.filter(c=>!c.credit).reduce((a,c)=>a+c.units,0);
+    h+=`<table class="tt"><caption>${ORD[t-1]} TERM</caption><thead><tr><th>Units</th><th>Code</th><th>Description</th><th>Status</th></tr></thead><tbody>`+
+      list.map(c=>{const st=S.status[c.code];const p=S.pick[c.code];
+        const pk=p?` <span class="tag" style="font-size:.7rem;color:#444">(${esc(p==="OTHER"?(S.other[c.code]||"other course"):p+(S.pick2[c.code]?" + "+S.pick2[c.code]:""))})</span>`:"";
+        const kk0=kindOf(c.slot);const kk=(kk0==="am"||kk0==="ge")?kk0:(c.cat==="major"?"major":"");const kt=kk?` <span class="ktag k-${kk}">${kk==="am"?"AMELEC":kk==="ge"?"GE":"MAJOR"}</span>`:"";
+        return `<tr data-code="${c.code}" tabindex="0" class="${kk?"k-"+kk:""}"><td class="u">${c.credit?c.units:"("+c.units+")"}</td><td class="cd">${c.code}${kt}</td><td>${esc(c.title)}${pk}</td><td class="st">${st==="done"?'<span class="stmark done">✓ Passed</span>':st==="plan"?'<span class="stmark plan">Planned</span>':st==="enr"?'<span class="stmark enr">Enrolled now</span>':"_____"}</td></tr>`;}).join("")+
+      `<tr><td class="u"><b>${tot}${nc?" ("+nc+")":""}</b></td><td></td><td><b>TOTAL</b></td><td></td></tr></tbody></table>`;
+  }
+  document.getElementById("titles").innerHTML=h;
+
+  const groups=[
+    ["am13","AMELEC 1–3 (History, Theory of Form, or Related Industries)","Theory or history of a selected art form or related industries."],
+    ["am46","AMELEC 4–6 (Production)","Production of a selected art form. Courses marked AY 2023–24+ are for students enrolled from AY 2023–2024 onwards."],
+    ["ge1","General Education Elective 1 (GELECT1): Social Sciences and Philosophy",""],
+    ["ge2","General Education Elective 2 (GELECT2): Math, Science, and Technology",""],
+    ["ge3","General Education Elective 3 (GELECT3): Arts and Humanities",""],
+    ["pe3","PATHFT3 choices",""],["pe4","PATHFT4 choices",""],
+    ["nstp1","NSTP001 choices",""],["nstp2","NSTP002 choices",""]
+  ];
+  let c2="",curK="";
+  const SECT={am:["Arts Management Electives (AMELEC 1–6)","Major electives: 6 slots of 3 units (18 units). Taken from SACP, SED, and SNMA."],
+              ge:["General Education Electives (GELECT 1–3)","3 slots of 3 units. Only the listed courses count."],
+              pe:["Physical Education choices (PATHFT3–4)","Choose one activity for each."],
+              nstp:["NSTP choices","Choose one track."]};
+  const bacim=()=>`<h3>Electives offered by the AB Creative Industries Management Program</h3><p class="lead">These count as AMELEC 4–6. You can record them here or under Arts Management and Creative Industries above; both update the same slots.</p><ul>${["AMCURTP","AMINFOA","AMTALEN","AMDIGIT","AMGASTR"].map(cd=>choiceRow("am46",CHOICES.am46.find(x=>x[1]===cd))).join("")}</ul>`;
+  groups.forEach(([k,label,lead])=>{
+    const kk=kindOf(k);
+    if(kk!==curK){ if(curK){ if(curK==="am") c2+=bacim(); c2+="</div></section>"; }
+      c2+=`<section class="kgrp k-${kk}"><div class="kbar"><b><span class="ktag" style="background:rgba(255,255,255,.22)">${KTAG[kk]}</span> ${SECT[kk][0]}</b><span>${SECT[kk][1]}</span></div><div class="kin">`; curK=kk; }
+    c2+=`<h3>${label}</h3>${lead?`<p class="lead">${lead}</p>`:""}`;
+    if(isGE(k)){const c=COURSES.find(x=>x.slot===k);const p=S.pick[c.code];const st=S.status[c.code];
+      c2+=`<p class="count">${p&&p!=="OTHER"?`<b>${p}</b> ${st==="done"?"taken and credited":st==="plan"?"planned":"chosen"}`:"Choose <b>one</b> course for "+c.code}. Only the courses below count.</p>`;}
+    if(k==="ge1") c2+=`<p class="count">Fixed course: <b>REEXECO</b> (Religious Experience and Spirituality). Tick it on the flowchart once passed.</p>`;
+    if(isAM(k)){const sl=COURSES.filter(c=>c.slot===k);const tk=sl.filter(c=>S.status[c.code]==="done"&&evalCourse(c).slot.state==="ok").length;const pl=sl.filter(c=>S.status[c.code]==="plan").length;
+      const cu=sl.filter(c=>S.status[c.code]==="done").reduce((a,c)=>a+unitInfo(c).credited,0);
+      c2+=`<p class="count"><b>${tk} of 3</b> taken and credited (${cu} of 9 units)${pl?`, <b>${pl}</b> planned`:""}</p>`;}
+    const by={};CHOICES[k].forEach(x=>{(by[x[0]]=by[x[0]]||[]).push(x);});
+    const showDept=isAM(k);
+    for(const d in by){
+      if(showDept) c2+=`<h4>${esc(d)}${d==="Music Production"?" (2 units each; take two for one AMELEC)":""}</h4>`;
+      c2+="<ul>"+by[d].map(x=>choiceRow(k,x)).join("")+"</ul>";
+    }
+  });
+  if(curK){ if(curK==="am") c2+=bacim(); c2+="</div></section>"; }
+  document.getElementById("choiceList").innerHTML=c2;
+}
+function whereIs(code){
+  const hits=COURSES.filter(c=>S.pick[c.code]===code||S.pick2[c.code]===code).map(c=>c.code);
+  return hits.join(", ");
+}
+function addToPlan(code,slot,status){
+  if(!requireYear()) return;
+  status=status||"plan";
+  const msg=document.getElementById("addMsg");
+  const slots=COURSES.filter(c=>c.slot===slot);
+  // a Music Production course can complete a slot that is waiting for its second course
+  let target=null,second=false;
+  if(MP[code]) {target=COURSES.find(c=>isAM(c.slot)&&MP[S.pick[c.code]]&&!S.pick2[c.code]&&S.pick[c.code]!==code); second=!!target;}
+  if(!target) target=slots.find(c=>!S.pick[c.code]);
+  if(!target){msg.style.color="#B3261E";msg.textContent=`All ${SLOT_LABEL[slot]} slots already have a course. Tap a slot on the flowchart to change it.`;return;}
+  if(second) S.pick2[target.code]=code; else S.pick[target.code]=code;
+  if(second){ if(status==="plan") S.status[target.code]="plan"; else if(status==="enr"&&S.status[target.code]!=="done") S.status[target.code]="enr"; else if(!S.status[target.code]) S.status[target.code]="done"; }
+  else S.status[target.code]=status;
+  save();renderAll();
+  msg.style.color="#0E5B3F";
+  const verb=status==="done"?"recorded as taken":status==="enr"?"recorded as currently enrolled":"added to your plan";
+  msg.textContent=second?`${code} ${verb} as the second Music Production course for ${target.code}.${status==="done"&&S.status[target.code]==="plan"?" The first course is still planned, so the slot stays Planned until you mark it taken.":""}`
+    :`${code} ${verb} for ${target.code}.${MP[code]?" Add one more Music Production elective to complete this slot.":""}`;
+  if(status==="plan"&&!whenTxt(target.code)){openSheet(target.code);shBody.insertAdjacentHTML("afterbegin",`<div class="msg ok"><b>${code} added to your plan as ${target.code}.</b> Now choose when you plan to take it.</div>`);const f=document.getElementById("planSY");if(f)f.focus();}
+}
+function markTaken(t){if(!requireYear())return;S.status[t]="done";save();renderAll();const m=document.getElementById("addMsg");m.style.color="#0E5B3F";m.textContent=`${t} marked as taken.`;}
+function removeFrom(code,t){
+  if(S.pick2[t]===code) delete S.pick2[t];
+  else if(S.pick[t]===code){ if(S.pick2[t]){S.pick[t]=S.pick2[t];delete S.pick2[t];} else {delete S.pick[t];delete S.other[t];delete S.status[t];} }
+  save();renderAll();const m=document.getElementById("addMsg");m.style.color="#0E5B3F";m.textContent=`${code} removed from ${t}.`;
+}
+document.getElementById("choiceList").addEventListener("click",ev=>{
+  const a=ev.target.closest("[data-add]");if(a){addToPlan(a.dataset.add,a.dataset.slot,a.dataset.st);return;}
+  const mk=ev.target.closest("[data-mark]");if(mk){markTaken(mk.dataset.mark);return;}
+  const rm=ev.target.closest("[data-remove]");if(rm){removeFrom(rm.dataset.remove,rm.dataset.from);}
+});
+document.getElementById("titles").addEventListener("click",ev=>{const r=ev.target.closest("tr[data-code]");if(r)openSheet(r.dataset.code);});
+document.getElementById("titles").addEventListener("keydown",ev=>{const r=ev.target.closest("tr[data-code]");if(r&&(ev.key==="Enter"||ev.key===" ")){ev.preventDefault();openSheet(r.dataset.code);}});
+
+function updateSteps(){
+  const issues=COURSES.reduce((a,c)=>a+evalCourse(c).warns.length,0);
+  const s1=!!S.year;
+  const s2=COURSES.some(c=>!isAM(c.slot)&&S.status[c.code]==="done");
+  const s3=COURSES.some(c=>needsPick(c.slot)&&S.pick[c.code]);
+  const s4=(s2||s3)&&issues===0;
+  const dlOk=!!S.dlSnap&&S.dlSnap===snap();
+  const sentOk=!!S.sentSnap&&S.sentSnap===wishSnap();
+  const s5=dlOk&&sentOk;
+  const st=[s1,s2,s3,s4,s5];
+  const label=[
+    s1?"✓ Done":"To do: required before anything else",
+    s2?"✓ Done":(s1?"To do":"Waiting for step 1"),
+    s3?"✓ Done":(s1?"To do":"Waiting for step 1"),
+    s4?"✓ Nothing flagged":(issues?`${issues} item${issues>1?"s":""} to fix`:(s1?"Do steps 2 and 3 first":"Waiting for step 1")),
+    [dlOk?"✓ PDF downloaded":(S.dlSnap?"PDF: changed since your last download":"PDF: to do"),
+     sentOk?"✓ Plan sent":(S.sentSnap?"Plan: changed since you last sent it":"Plan: not sent yet")].join(" · ")];
+  const cur=st.findIndex(x=>!x);
+  st.forEach((d,i)=>{const li=document.getElementById("st"+(i+1));li.classList.toggle("done",d);li.classList.toggle("current",i===cur);li.classList.toggle("blocked",!s1&&i>0);li.querySelector(".sstate").textContent=label[i];});
+  document.getElementById("flowSheet").classList.toggle("gated",!s1);
+  const np=document.getElementById("navProg");if(np)np.textContent=cur<0?"All 5 steps done":`Step ${cur+1} of 5`;
+}
+// ---------- other courses taken (documentation only) ----------
+const xEl=id=>document.getElementById(id);
+(function fillSY(){
+  const sel=xEl("xSY");const now=new Date();const startY=now.getMonth()>=7?now.getFullYear():now.getFullYear()-1;
+  let h='<option value="">Select school year</option>';
+  for(let y=startY;y>=startY-10;y--) h+=`<option>${y}–${y+1}</option>`;
+  sel.innerHTML=h;
+})();
+function lookupCode(code){
+  const Q=ALIAS[code]||code;
+  const fc=COURSES.find(c=>c.code.replace("-","")===Q.replace("-",""));
+  if(fc) return {type:"flow",code:fc.code};
+  for(const k in CHOICES){if(k==="mpAll")continue;const f=CHOICES[k].find(x=>x[1]===Q);if(f)return {type:"choice",slot:k,code:Q,title:f[2]};}
+  return null;
+}
+function xValidate(){
+  const code=xEl("xCode").value.trim();const msg=xEl("xCodeMsg");
+  msg.className="xmsg";msg.innerHTML="";
+  let ok=!!(code&&xEl("xSY").value&&xEl("xTerm").value&&xEl("xGrade").value==="yes");
+  if(code){
+    const hit=lookupCode(code);
+    if(hit&&hit.type==="flow"){ok=false;msg.className="xmsg warn";msg.innerHTML=`${esc(hit.code)} is on your CIM flowchart. Tick it on the flowchart instead.<button data-xgo="flow" data-code="${esc(hit.code)}">Open ${esc(hit.code)}</button>`;}
+    else if(hit&&hit.type==="choice"){ok=false;msg.className="xmsg warn";msg.innerHTML=`${esc(hit.code)} is an approved ${esc(SLOT_LABEL[hit.slot])} course, so it can count toward your degree. Record it under "Choices for electives" instead.<button data-xgo="choices">Go there</button>`;}
+    else if((S.extra||[]).some(x=>x.code===code&&x.sy===xEl("xSY").value&&x.term===xEl("xTerm").value)){ok=false;msg.className="xmsg warn";msg.textContent=`${code} for ${xEl("xSY").value}, ${xEl("xTerm").value} is already listed.`;}
+  }
+  const u=xEl("xUnits").value.trim();
+  if(u&&!/^\d{1,2}(\.\d)?$/.test(u)){ok=false;msg.className="xmsg warn";msg.textContent="Units should be a number, like 3 or 1.5.";}
+  if(xEl("xGrade").value==="no"){ok=false;msg.className="xmsg warn";msg.textContent="Only courses you passed can be listed here, so this one can't be added. If you need to retake it, talk to your Academic Adviser.";}
+  if(!S.year&&code){ok=false;}
+  xEl("xAdd").disabled=!ok;
+  return ok;
+}
+["xCode","xTitle","xUnits","xSY","xTerm","xGrade"].forEach(id=>{xEl(id).addEventListener("input",xValidate);xEl(id).addEventListener("change",xValidate);});
+xEl("xCode").addEventListener("input",ev=>{const v=ev.target.value.toUpperCase().replace(/[^A-Z0-9\-]/g,"");if(v!==ev.target.value)ev.target.value=v;xValidate();});
+xEl("xUnits").addEventListener("input",ev=>{const v=ev.target.value.replace(/[^0-9.]/g,"");if(v!==ev.target.value)ev.target.value=v;});
+xEl("xCode").addEventListener("focus",()=>{if(!S.year)requireYear();});
+xEl("xCodeMsg").addEventListener("click",ev=>{const b=ev.target.closest("[data-xgo]");if(!b)return;
+  if(b.dataset.xgo==="flow")openSheet(b.dataset.code); else xEl("backH").scrollIntoView({behavior:"smooth",block:"start"});});
+xEl("xAdd").addEventListener("click",()=>{
+  if(!requireYear()||!xValidate())return;
+  S.extra=S.extra||[];
+  S.extra.push({code:xEl("xCode").value.trim(),title:xEl("xTitle").value.trim(),units:xEl("xUnits").value.trim(),sy:xEl("xSY").value,term:xEl("xTerm").value,passed:true});
+  ["xCode","xTitle","xUnits"].forEach(id=>xEl(id).value="");xEl("xGrade").value="";
+  save();renderAll();xValidate();
+  const m=xEl("xCodeMsg");m.className="xmsg ok";m.textContent="Added. Remember: this course is for documentation only and isn't counted toward your degree.";
+  xEl("xCode").focus();
+});
+function renderExtra(){
+  const L=S.extra||[];
+  if(!L.length){xEl("xList").innerHTML='<p class="mini" style="margin:8px 0 0">No courses listed yet.</p>';return;}
+  const order=x=>x.sy+"|"+x.term;
+  const sorted=L.map((x,i)=>({...x,i})).sort((a,b)=>order(a)<order(b)?-1:order(a)>order(b)?1:0);
+  xEl("xList").innerHTML=`<div class="xwrap"><table class="xtbl"><thead><tr><th>Code</th><th>Course title</th><th>Units</th><th>School year</th><th>Term</th><th>Result</th><th><span class="sr">Remove</span></th></tr></thead><tbody>`+
+    sorted.map(x=>`<tr><td>${esc(x.code)}</td><td>${esc(x.title||"—")}</td><td>${esc(x.units||"—")}</td><td>${esc(x.sy)}</td><td>${esc(x.term)}</td><td>✓ Passed</td><td><button class="rm" data-xrm="${x.i}" aria-label="Remove ${esc(x.code)}">Remove</button></td></tr>`).join("")+
+    `</tbody></table></div><p class="mini" style="margin:6px 0 0">${L.length} course${L.length>1?"s":""} listed for documentation. Not counted toward your CIM degree.</p>`;
+}
+xEl("xList").addEventListener("click",ev=>{const b=ev.target.closest("[data-xrm]");if(!b)return;const i=+b.dataset.xrm;const x=S.extra[i];
+  confirmSheet(`Remove ${x.code}?`,"Other Benilde courses I've passed",`<p>This removes <b>${esc(x.code)}</b> (${esc(x.sy)}, ${esc(x.term)}) from your documentation list.</p>`,
+    [{label:"Cancel",cls:"primary",fn:closeSheet},{label:`Remove ${x.code}`,cls:"danger",fn:()=>{S.extra.splice(i,1);save();renderAll();closeSheet();}}]);});
+
+// ---------- elective wish list (order of preference) ----------
+const WISH_SLOTS=["AMELEC1","AMELEC2","AMELEC3","AMELEC4","AMELEC5","AMELEC6","GELECT2","GELECT3"];
+const prefOf=code=>(S.pref||{})[code]||[];
+function wishOpts(c,sel,blocked,disabled){
+  const by={};CHOICES[c.slot].forEach(x=>{(by[x[0]]=by[x[0]]||[]).push(x);});
+  let h=`<option value="">${disabled?"Choose the one above first":"Choose…"}</option>`;
+  const grp=isAM(c.slot);
+  for(const g in by){
+    if(grp)h+=`<optgroup label="${esc(g)}">`;
+    h+=by[g].map(x=>{const why=blocked[x[1]];const dis=why&&sel!==x[1];
+      return `<option value="${x[1]}"${sel===x[1]?" selected":""}${dis?" disabled":""}>${x[1]} · ${esc(x[2])}${MP[x[1]]?" (2 units)":""}${dis?` (${why})`:""}</option>`;}).join("");
+    if(grp)h+="</optgroup>";
+  }
+  return h;
+}
+function renderWish(){
+  const sys=planSYs();let done=0,need=0,html="";
+  const head=`<div class="wrow whead"><span>Elective</span><span>School year</span><span>Term</span><span>1st choice</span><span>2nd choice</span><span>3rd choice</span><span></span></div>`;
+  let lastK="";
+  WISH_SLOTS.forEach(code=>{
+    const c=BY[code];const kk=kindOf(c.slot);
+    if(kk!==lastK){html+=`<h3 class="khead k-${kk} wgrp"><span class="ktag">${KTAG[kk]}</span>${kk==="am"?"Arts Management electives":"General Education electives"}</h3>`+head;lastK=kk;}
+    const sub=c.slot==="am13"?"History, theory, or form":c.slot==="am46"?"Production":c.code==="GELECT2"?"Math, Science, and Technology":"Arts and Humanities";
+    const slotCell=`<span class="wslot"><b>${code}</b><span class="mini">${sub} · Term ${c.term} on flowchart</span></span>`;
+    if(S.status[code]==="enr"){
+      const p=S.pick[code];
+      html+=`<div class="wrow k-${kk}">${slotCell}<span class="wdone" style="color:#3949AB">Currently enrolled${p?": "+esc(p==="OTHER"?(S.other[code]||"other course"):p+(S.pick2[code]?" + "+S.pick2[code]:"")):""}</span></div>`;return;
+    }
+    if(S.status[code]==="done"){
+      const p=S.pick[code];
+      html+=`<div class="wrow k-${kk}">${slotCell}<span class="wdone">✓ Taken${p?": "+esc(p==="OTHER"?(S.other[code]||"other course"):p+(S.pick2[code]?" + "+S.pick2[code]:"")):""}</span></div>`;return;
+    }
+    need++;
+    const w=(S.when||{})[code]||{};const p1=S.pick[code]&&S.pick[code]!=="OTHER"?S.pick[code]:"";const pr=prefOf(code);
+    const nRanks=CHOICES[c.slot].length>=3?3:CHOICES[c.slot].length;
+    // block courses already used as a planned/taken course in another slot
+    const used={};COURSES.forEach(o=>{if(o.slot&&o.code!==code&&(isAM(o.slot)===isAM(c.slot))){[S.pick[o.code],S.pick2[o.code]].forEach(v=>{if(v&&v!=="OTHER")used[v]=(S.status[o.code]==="done"?"taken in ":"planned in ")+o.code;});}});
+    const ranks=[p1,pr[0]||"",pr[1]||""];
+    const cell=i=>{
+      if(i>=nRanks) return `<span class="wna">No more options</span>`;
+      const blocked={...used};ranks.forEach((v,j)=>{if(v&&j!==i)blocked[v]=["1st","2nd","3rd"][j]+" choice";});
+      const dis=i>0&&!ranks[i-1];
+      return `<span><span class="wlab">${["1st","2nd","3rd"][i]} choice</span><select data-w="${code}" data-f="r${i+1}" aria-label="${code} ${["1st","2nd","3rd"][i]} choice"${dis?" disabled":""}>${wishOpts(c,ranks[i],blocked,dis)}</select></span>`;
+    };
+    let note="";
+    if(p1&&(!w.sy||!w.term)) note=`<p class="wnote warn">Choose the school year and term you plan to take ${code}.</p>`;
+    else if(p1&&MP[p1]&&!S.pick2[code]) note=`<p class="wnote warn">${p1} is a 2-unit Music Production course. You'll need a second Music Production course to fill ${code}; tap ${code} on the flowchart to add it.</p>`;
+    else if(p1&&w.sy&&w.term){note=`<p class="wnote ok">Planned: ${p1} in ${w.sy}, ${w.term}${pr.filter(Boolean).length?` · backups: ${pr.filter(Boolean).join(", ")}`:""}</p>`;done++;}
+    else if(S.pick[code]==="OTHER") note=`<p class="wnote warn">Your planned course for ${code} isn't on the approved list. Choose an approved 1st choice.</p>`;
+    html+=`<div class="wrow k-${kk}">${slotCell}
+      <span><span class="wlab">School year</span><select data-w="${code}" data-f="sy" aria-label="${code} school year"><option value="">School year</option>${sys.map(y=>`<option${w.sy===y?" selected":""}>${y}</option>`).join("")}</select></span>
+      <span><span class="wlab">Term</span><select data-w="${code}" data-f="term" aria-label="${code} term"><option value="">Term</option>${["Term 1","Term 2","Term 3"].map(t=>`<option${w.term===t?" selected":""}>${t}</option>`).join("")}</select></span>
+      ${cell(0)}${cell(1)}${cell(2)}
+      <span>${(p1||pr.some(Boolean)||w.sy||w.term||S.pick[code])?`<button class="wclr" data-wclr="${code}" aria-label="Clear ${code} from my wish list">Clear</button>`:""}</span>${note}</div>`;
+  });
+  document.getElementById("wishList").innerHTML=html;
+  document.getElementById("wishProg").innerHTML=need?`<b>${done} of ${need}</b> remaining electives have a 1st choice and a planned term.`:"All your electives are taken. Nothing to plan.";
+}
+function clearWish(code){
+  S.pref=S.pref||{};delete S.pref[code];if(S.when)delete S.when[code];
+  if(S.status[code]!=="done"){delete S.pick[code];delete S.pick2[code];delete S.other[code];if(S.status[code]==="plan")delete S.status[code];}
+}
+function wishHasData(){return WISH_SLOTS.some(k=>S.status[k]!=="done"&&(S.pick[k]||prefOf(k).some(Boolean)||((S.when||{})[k]||{}).sy||((S.when||{})[k]||{}).term));}
+document.getElementById("wishList").addEventListener("click",ev=>{
+  const b=ev.target.closest("[data-wclr]");if(!b)return;const code=b.dataset.wclr;
+  clearWish(code);save();renderAll();toast(`${code} cleared from your wish list.`);
+  const f=document.querySelector(`#wishList [data-w="${code}"][data-f="sy"]`);if(f)f.focus();
+});
+document.getElementById("wishClearAll").addEventListener("click",()=>{
+  if(!wishHasData()){toast("Your wish list is already empty.");return;}
+  confirmSheet("Clear your whole wish list?","My elective wish list",
+    `<div class="msg warn">This removes the planned term and all 1st, 2nd, and 3rd choices for every elective you haven't taken yet. Electives you've marked as passed are not affected.</div>`,
+    [{label:"Cancel, keep my wish list",cls:"primary",fn:closeSheet},
+     {label:"Yes, clear my wish list",cls:"danger",fn:()=>{WISH_SLOTS.forEach(clearWish);save();renderAll();closeSheet();toast("Wish list cleared. You can start again.");}}]);
+});
+document.getElementById("wishList").addEventListener("change",ev=>{
+  const el=ev.target.closest("[data-w]");if(!el)return;
+  const code=el.dataset.w,f=el.dataset.f,v=el.value;
+  if(!requireYear()){renderWish();return;}
+  S.when=S.when||{};S.pref=S.pref||{};
+  if(f==="sy"||f==="term"){const w=S.when[code]=S.when[code]||{};w[f]=v;}
+  else if(f==="r1"){
+    if(v){S.pick[code]=v;delete S.other[code];if(!MP[v])delete S.pick2[code];if(!S.status[code])S.status[code]="plan";S.pref[code]=prefOf(code).filter(x=>x&&x!==v);}
+    else{const pr=prefOf(code).filter(Boolean);delete S.pick2[code];
+      if(pr.length){S.pick[code]=pr[0];S.pref[code]=pr.slice(1);toast(`${pr[0]} moved up to your 1st choice for ${code}.`);}
+      else{delete S.pick[code];if(S.status[code]==="plan")delete S.status[code];}}
+  } else {
+    const pr=[...prefOf(code)];const i=f==="r2"?0:1;pr[i]=v;
+    if(!v&&i===0&&pr[1]){pr[0]=pr[1];pr[1]="";}
+    S.pref[code]=pr.filter((x,j)=>x||j<1).slice(0,2);
+  }
+  save();renderAll();
+  const again=document.querySelector(`#wishList [data-w="${code}"][data-f="${f}"]`);if(again)again.focus();
+});
+
+// ---------- send the elective plan through the program's Google Form ----------
+const FORM_BASE="https://docs.google.com/forms/d/e/1FAIpQLSfB3PH-SBLkxmI98aV0aE-x-t7zA7BlF9w6yebTP7CQGbigDA/viewform?usp=pp_url";
+const F_NAME="entry.1825401635",F_ID="entry.1392184379",F_PLAN="entry.74542215";
+const wishSnap=()=>JSON.stringify([WISH_SLOTS.map(k=>[S.status[k],S.pick[k],S.pick2[k],prefOf(k),(S.when||{})[k]]),S.year]);
+function planText(){
+  const yr=S.year?document.getElementById("yearSel").options[document.getElementById("yearSel").selectedIndex].text:"Not indicated";
+  const d=new Date();const stamp=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+  const L=[`Year: ${yr}`,`Prepared: ${stamp} (CIM Flowchart Checker, A.Y. 2025-2026 flowchart)`,"","WISH LIST (elective | planned school year and term | choices in order of preference)"];
+  const rows=WISH_SLOTS.filter(k=>S.status[k]!=="done"&&S.status[k]!=="enr").map(k=>{const w=(S.when||{})[k]||{};const p1=S.pick[k]&&S.pick[k]!=="OTHER"?S.pick[k]+(S.pick2[k]?"+"+S.pick2[k]:""):"-";
+    return `${k} | ${w.sy&&w.term?asc(w.sy)+", "+w.term:"not set"} | 1st ${p1}, 2nd ${prefOf(k)[0]||"-"}${BY[k].slot==="am13"||BY[k].slot==="am46"?", 3rd "+(prefOf(k)[1]||"-"):""}`;});
+  L.push(...(rows.length?rows:["(none - all electives taken)"]));
+  const taken=WISH_SLOTS.filter(k=>S.status[k]==="done"&&S.pick[k]).map(k=>`${k} ${S.pick[k]==="OTHER"?"other":S.pick[k]+(S.pick2[k]?"+"+S.pick2[k]:"")}`);
+  L.push("",`ALREADY TAKEN: ${taken.length?taken.join("; "):"none recorded"}`);
+  const en=COURSES.filter(c=>S.status[c.code]==="enr").map(c=>c.code+(S.pick[c.code]&&S.pick[c.code]!=="OTHER"?" "+S.pick[c.code]:""));
+  L.push(`CURRENTLY ENROLLED${curTxt()?" ("+asc(curTxt())+")":""}: ${en.length?en.join("; "):"none marked"}`);
+  return L.join("\n");
+}
+function openSendPlan(){
+  if(!requireYear())return;
+  const remaining=WISH_SLOTS.filter(k=>S.status[k]!=="done"&&S.status[k]!=="enr");
+  const noFirst=remaining.filter(k=>!(S.pick[k]&&S.pick[k]!=="OTHER"));
+  const noWhen=remaining.filter(k=>S.pick[k]&&S.pick[k]!=="OTHER"&&!(((S.when||{})[k]||{}).sy&&((S.when||{})[k]||{}).term));
+  const anyPlan=remaining.length-noFirst.length>0;
+  confirmSheet("Send my elective plan","To the CIM program",
+    `<div class="msg note">Your name, ID number, and elective wish list will be sent to the CIM program through its Google Form (Benilde account). It's used to plan which electives to offer and is <b>not</b> an enrollment or reservation.</div>
+     ${!anyPlan&&remaining.length?`<div class="msg warn"><b>Your wish list is empty.</b> Fill in at least one 1st choice in "My elective wish list" before sending.</div>`:""}
+     ${noWhen.length?`<div class="msg warn"><b>Missing timing:</b> ${noWhen.join(", ")} ${noWhen.length>1?"have":"has"} a 1st choice but no school year and term. Add them so your plan can be counted for the right term.</div>`:""}
+     ${anyPlan&&noFirst.length?`<div class="msg note">No 1st choice yet for ${noFirst.join(", ")}. You can send now and send again later.</div>`:""}
+     <div class="field"><label for="spName">Full name <span class="req" aria-hidden="true">*</span></label><input id="spName" type="text" maxlength="80" value="${esc(S.name||"")}" autocomplete="name"></div>
+     <div class="field"><label for="spId">ID number <span class="req" aria-hidden="true">*</span></label><input id="spId" type="text" inputmode="numeric" maxlength="12" value="${esc(S.idno||"")}"></div>
+     <div class="field"><label>What will be sent</label><pre class="planpre" id="spPre">${esc(planText())}</pre></div>
+     <a class="btn primary" id="spGo" href="#" target="_blank" rel="noopener noreferrer" aria-disabled="true">Open the form with my plan filled in</a>
+     <p class="mini" id="spMsg" aria-live="polite">The form opens in a new tab. Check your answers there, then tap <b>Submit</b>. Your plan is only sent once you submit the form.</p>`,
+    [{label:"Close",fn:closeSheet}]);
+  const nameEl=document.getElementById("spName"),idEl=document.getElementById("spId"),go=document.getElementById("spGo"),msg=document.getElementById("spMsg");
+  const sync=()=>{
+    idEl.value=idEl.value.replace(/\D/g,"");
+    const ok=nameEl.value.trim().length>=2&&idEl.value.length>=6&&anyPlan;
+    go.setAttribute("aria-disabled",String(!ok));go.style.opacity=ok?"1":".45";go.style.pointerEvents=ok?"auto":"none";
+    go.href=ok?`${FORM_BASE}&${F_NAME}=${encodeURIComponent(nameEl.value.trim())}&${F_ID}=${encodeURIComponent(idEl.value)}&${F_PLAN}=${encodeURIComponent(planText())}`:"#";
+    if(!ok)msg.innerHTML=!anyPlan?"Add at least one 1st choice to your wish list first.":"Enter your full name and ID number (at least 6 digits) to continue.";
+    else msg.innerHTML="The form opens in a new tab. Check your answers there, then tap <b>Submit</b>. Your plan is only sent once you submit the form.";
+  };
+  nameEl.addEventListener("input",sync);idEl.addEventListener("input",sync);sync();
+  go.addEventListener("click",ev=>{
+    if(go.getAttribute("aria-disabled")==="true"){ev.preventDefault();return;}
+    S.name=nameEl.value.trim();S.idno=idEl.value;S.sentSnap=wishSnap();save();updateSteps();
+    msg.innerHTML="<b>Form opened in a new tab.</b> Remember to tap Submit there. If you change your wish list later, send it again; the program will use your latest submission.";
+  });
+  nameEl.focus();
+}
+document.getElementById("wishSend").addEventListener("click",openSendPlan);
+
+function curTxt(){const c=S.cur||{};return c.sy&&c.term?`${c.sy}, ${c.term}`:"";}
+function renderEnr(){
+  const L=COURSES.filter(c=>S.status[c.code]==="enr");const u=enrUnits();
+  const sel=document.getElementById("curSY");const c=S.cur||{};
+  if(!sel.options.length){sel.innerHTML='<option value="">School year</option>'+planSYs().map(y=>`<option>${y}</option>`).join("");}
+  sel.value=c.sy||"";document.getElementById("curTerm").value=c.term||"";
+  document.getElementById("enrList").innerHTML=!S.year?'<p class="empty">Choose your year in step 1 first.</p>':L.length?
+    L.map(x=>`<button class="chip cat-${x.cat}" data-code="${x.code}" title="${esc(x.title)}"><span class="nt">${x.credit?x.units+" units":"("+x.units+") non-credit"}${S.pick[x.code]&&S.pick[x.code]!=="OTHER"?" · "+S.pick[x.code]:""}</span>${x.code}</button>`).join("")+`<span class="enrsum">${L.length} course${L.length>1?"s":""} · ${u} units${u>24?' <b style="color:#B3261E">(above 24)</b>':""}${curTxt()?"":' · <b style="color:#B3261E">set the term</b>'}</span>`
+    :'<p class="empty">None marked yet. If you are enrolled this term, open each course and tap <b>Enrolled now</b>.</p>';
+}
+function renderAll(){renderEnr();renderBoard();renderBack();renderSide();renderExtra();renderWish();updateSteps();if(typeof chkIn!=="undefined"&&chkIn.value.trim()&&chkOut.innerHTML)check(chkIn.value);}
+
+// sheet
+const sheet=document.getElementById("sheet"),scrim=document.getElementById("scrim"),shBody=document.getElementById("shBody");
+let current=null,lastFocus=null;
+function openSheet(code){
+  current=BY[code];lastFocus=document.activeElement;
+  fillSheet();
+  sheet.classList.add("on");scrim.classList.add("on");
+  document.getElementById("shClose").focus();
+}
+function closeSheet(){sheet.classList.remove("on");scrim.classList.remove("on");current=null;if(lastFocus&&document.body.contains(lastFocus))lastFocus.focus();}
+function usedElsewhere(selfCode){
+  const u={};COURSES.forEach(o=>{if(isAM(o.slot)&&o.code!==selfCode){[S.pick[o.code],S.pick2[o.code]].forEach(v=>{if(v&&v!=="OTHER")u[v]=o.code;});}});
+  return u;
+}
+function optionsHTML(slot,sel,mpOnly,selfCode,alsoBlock){
+  const list=CHOICES[slot].filter(x=>!mpOnly||MP[x[1]]);
+  const used=selfCode?usedElsewhere(selfCode):{};if(alsoBlock)used[alsoBlock]=selfCode;
+  const groups={};list.forEach(x=>{(groups[x[0]]=groups[x[0]]||[]).push(x);});
+  let h=`<option value="">Choose…</option>`;
+  for(const g in groups){h+=`<optgroup label="${esc(g)}">`+groups[g].map(x=>{const u=used[x[1]]&&sel!==x[1];return `<option value="${x[1]}"${sel===x[1]?" selected":""}${u?" disabled":""}>${x[1]} · ${esc(x[2])}${MP[x[1]]?" (2 units)":""}${u?` (already used in ${used[x[1]]})`:""}</option>`;}).join("")+`</optgroup>`;}
+  if(!mpOnly) h+=`<option value="OTHER"${sel==="OTHER"?" selected":""}>A course not on this list</option>`;
+  return h;
+}
+function fillSheet(){
+  const c=current;const e=evalCourse(c);
+  document.getElementById("shTitle").textContent=(c.sl?"*":"")+c.code;
+  document.getElementById("shSub").textContent=c.title;
+  const kk=kindOf(c.slot);
+  let h=(kk==="am"?`<div class="kbadge k-am"><span class="ktag">AMELEC</span>Arts Management elective (major elective, from the approved list)</div>`:
+         kk==="ge"?`<div class="kbadge k-ge"><span class="ktag">GE ELECTIVE</span>General Education elective (only the listed courses)</div>`:"")+
+    `<div class="seg" role="group" aria-label="Status">
+    <button data-st="" aria-pressed="${!e.st}">Not yet</button>
+    <button data-st="plan" aria-pressed="${e.st==="plan"}">Planned</button>
+    <button data-st="enr" aria-pressed="${e.st==="enr"}" class="segenr">Enrolled now</button>
+    <button data-st="done" aria-pressed="${e.st==="done"}">Passed</button></div>`;
+  if(e.st==="plan"){const w=(S.when||{})[c.code]||{};
+    h+=`<div class="field planwhen"><label>When do you plan to take it?</label><div class="pw2">
+      <select id="planSY" aria-label="Planned school year"><option value="">School year</option>${planSYs().map(y=>`<option${w.sy===y?" selected":""}>${y}</option>`).join("")}</select>
+      <select id="planTerm" aria-label="Planned term"><option value="">Term</option>${["Term 1","Term 2","Term 3"].map(t=>`<option${w.term===t?" selected":""}>${t}</option>`).join("")}</select></div>
+      <p class="help">${whenTxt(c.code)?"Saved: "+whenTxt(c.code)+".":"This helps the program decide which electives to offer each term."}</p></div>`;}
+  h+=`<dl class="facts"><dt>Type</dt><dd>${CAT_NAME[c.cat]}${c.sl?", Service Learning":""}</dd>
+     <dt>Units</dt><dd>${c.credit?c.units:`(${c.units}) non-credit`}</dd>
+     <dt>Flowchart term</dt><dd>Term ${c.term}</dd>
+     <dt>Prerequisite</dt><dd>${c.prereq.length?c.prereq.map(p=>`${p} ${S.status[p]==="done"?"✓":"(not yet)"}`).join(", "):c.code==="RESMETO"?"3rd academic year onwards":"None listed"}</dd>
+     <dt>Grading</dt><dd>${gradingOf(c)}</dd>
+     ${CMAP[c.code]?`<dt>Program outcomes</dt><dd>${CMAP[c.code].split("").map(n=>"PO"+n).join(", ")}</dd>`:""}</dl>`;
+  if(CMAP[c.code]) h+=`<details class="podet"><summary>What these outcomes mean</summary><ul>${CMAP[c.code].split("").map(n=>`<li><b>PO${n}.</b> ${esc(POS["PO"+n])}.</li>`).join("")}</ul></details>`;
+  if(c.slot==="am13") h+=`<div class="msg note">AMELEC 1–3 must be about the theory or history of a selected art form or related industries. Free choice, but only from the approved list.</div>`;
+  if(isGE(c.slot)) h+=`<div class="msg note">${c.code} is a General Education elective. Choose one of the listed courses only: ${CHOICES[c.slot].map(x=>x[1]+" ("+x[2]+")").join(" or ")}. Any other course won't count.</div>`;
+  if(c.slot==="am46") h+=`<div class="msg note">AMELEC 4–6 must be about the production of a selected art form. Free choice, but only from the approved list.</div>`;
+  if(NOTES[c.code]) h+=`<div class="msg note">${NOTES[c.code]}</div>`;
+  if(c.slot&&c.code!=="REEXECO"){
+    const p=S.pick[c.code]||"";
+    h+=`<div class="field"><label for="pickSel">${isAM(c.slot)?"Which elective did you take or plan to take?":"Which course?"}</label>
+      <select id="pickSel">${optionsHTML(c.slot,p,false,isAM(c.slot)?c.code:null)}</select>
+      <p class="help">Approved for ${SLOT_LABEL[c.slot]}.</p></div>`;
+    if(p) h+=`<button class="btn rmbtn" id="clearSlot">Remove ${esc(p==="OTHER"?(S.other[c.code]||"this course"):p+(S.pick2[c.code]?" + "+S.pick2[c.code]:""))} from ${c.code}</button>`;
+    if(p==="OTHER") h+=`<div class="field"><label for="otherIn">Course code or title</label><input id="otherIn" type="text" value="${esc(S.other[c.code]||"")}" placeholder="e.g. a course from another program"></div>`;
+    if(MP[p]) h+=`<div class="field"><label for="pick2Sel">Second Music Production elective</label><select id="pick2Sel">${optionsHTML("mpAll",S.pick2[c.code]||"",true,c.code,p)}</select><p class="help">Two 2-unit Music Production electives fill one 3-unit AMELEC.</p></div>`;
+    if(e.slot) e.slot.msgs.forEach(m=>{h+=`<div class="msg ${m.t}">${esc(m.m)}</div>`;});
+    const ui=unitInfo(c);
+    if(ui&&S.pick[c.code]) h+=`<div class="msg ${ui.credited?"ok":"warn"}"><b>Units:</b> ${esc(ui.text)}${ui.credited?(e.st==="done"?` Counted toward ${c.code}.`:` This will count toward ${c.code} once passed.`):""}</div>`;
+    else if(e.slot&&e.slot.state==="ok") h+=`<div class="msg ok">This counts toward ${c.code}.</div>`;
+  }
+  e.warns.filter(w=>!(e.slot&&e.slot.msgs.some(m=>m.m===w))).forEach(w=>{h+=`<div class="msg warn">${esc(w)}</div>`;});
+  if(!e.st&&e.locked) h+=`<div class="msg note">Locked for now. ${e.missing.length?`Complete ${e.missing.join(", ")} first.`:""}${e.yearBlock?" Available from your 3rd academic year.":""}</div>`;
+  if(!e.st&&!e.locked) h+=`<div class="msg ok">Open: you can take this once it's offered.</div>`;
+  shBody.innerHTML=h;
+}
+// music second pick should list all MP courses regardless of slot
+CHOICES.mpAll=Object.keys(MP).map(k=>["Music Production",k,titleOf(k)]);
+shBody.addEventListener("click",ev=>{
+  const b=ev.target.closest("[data-st]");if(!b||!current)return;
+  const v=b.dataset.st;const code=current.code;const was=S.status[code];
+  if(v===(was||"")) return;
+  let ok;
+  if(v==="done") ok=tryDone(code);
+  else if(v==="enr"&&was!=="done") ok=tryEnroll(code);
+  else if(was==="done") ok=tryUndo(code,v||null);
+  else { if(!requireYear()) return; if(v)S.status[code]=v;else delete S.status[code]; save();renderAll();ok=true; }
+  if(ok&&current&&current.code===code) fillSheet();
+});
+shBody.addEventListener("change",ev=>{
+  if(current&&(ev.target.id==="planSY"||ev.target.id==="planTerm")){
+    S.when=S.when||{};const w=S.when[current.code]=S.when[current.code]||{};
+    if(ev.target.id==="planSY")w.sy=ev.target.value;else w.term=ev.target.value;
+    save();renderAll();const keep=ev.target.id;fillSheet();const f=document.getElementById(keep);if(f)f.focus();
+    if(w.sy&&w.term)toast(`Planned for ${w.sy}, ${w.term}.`);return;}
+  if(!current||(ev.target.id!=="pickSel"&&ev.target.id!=="pick2Sel"))return;const c=current;
+  if(!S.year){ev.target.value=ev.target.id==="pickSel"?(S.pick[c.code]||""):(S.pick2[c.code]||"");requireYear();return;}
+  if(ev.target.id==="pickSel"){const v=ev.target.value;if(v)S.pick[c.code]=v;else delete S.pick[c.code];if(!MP[v])delete S.pick2[c.code];if(v!=="OTHER")delete S.other[c.code];}
+  if(ev.target.id==="pick2Sel"){const v=ev.target.value;if(v)S.pick2[c.code]=v;else delete S.pick2[c.code];}
+  save();renderAll();fillSheet();
+  const f=document.getElementById(ev.target.id);if(f)f.focus();
+});
+function clearSlot(code){
+  const c=BY[code];const p=S.pick[code];const name=p==="OTHER"?(S.other[code]||"this course"):p+(S.pick2[code]?" + "+S.pick2[code]:"");
+  const doClear=()=>{const pr=prefOf(code).filter(Boolean);
+    delete S.pick[code];delete S.pick2[code];delete S.other[code];
+    if(pr.length){S.pick[code]=pr[0];S.pref[code]=pr.slice(1);S.status[code]="plan";}
+    else{delete S.status[code];if(S.when)delete S.when[code];}
+    save();renderAll();
+    if(current&&current.code===code)fillSheet();else{openSheet(code);}
+    toast(pr.length?`${name} removed. Your 2nd choice, ${pr[0]}, is now planned for ${code}.`:`${name} removed from ${code}.`);
+  };
+  if(S.status[code]==="done") confirmSheet(`Remove ${name}?`,`${code} is marked as taken`,`<div class="msg warn">${esc(name)} is recorded as <b>taken</b> for ${code}. Removing it will mark ${code} as not taken and take ${c.units} units off your credited total.</div>`,
+    [{label:"Cancel, keep it",cls:"primary",fn:()=>openSheet(code)},{label:`Yes, remove ${name}`,cls:"danger",fn:doClear}]);
+  else doClear();
+}
+shBody.addEventListener("click",ev=>{if(ev.target.closest("#clearSlot")&&current)clearSlot(current.code);});
+shBody.addEventListener("input",ev=>{
+  if(ev.target.id==="otherIn"&&current){S.other[current.code]=ev.target.value;save();renderAll();}
+});
+document.getElementById("shClose").addEventListener("click",closeSheet);
+scrim.addEventListener("click",closeSheet);
+document.addEventListener("keydown",ev=>{if(ev.key==="Escape"&&current)closeSheet();});
+
+// ---------- mistake-proofing (poka-yoke) ----------
+let toastT;
+function toast(m){const t=document.getElementById("toast");t.textContent=m;t.classList.add("on");clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove("on"),3800);}
+function requireYear(){
+  if(S.year) return true;
+  const st=document.getElementById("st1");st.classList.remove("nudge");void st.offsetWidth;st.classList.add("nudge");
+  st.scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"center"});
+  document.getElementById("yearSel").focus();
+  toast("Start with step 1: choose your current year.");
+  return false;
+}
+function missingAll(code,seen){
+  seen=seen||new Set();
+  BY[code].prereq.forEach(p=>{if(S.status[p]!=="done"&&!seen.has(p)){seen.add(p);missingAll(p,seen);}});
+  return [...seen].sort((a,b)=>BY[a].term-BY[b].term);
+}
+const listTxt=a=>a.length<2?a.join(""):a.slice(0,-1).join(", ")+" and "+a[a.length-1];
+function confirmSheet(title,sub,html,buttons){
+  current=null;lastFocus=document.activeElement;
+  document.getElementById("shTitle").textContent=title;
+  document.getElementById("shSub").textContent=sub;
+  shBody.innerHTML=html+`<div class="btnrow">${buttons.map((b,i)=>`<button class="btn ${b.cls||""}" data-cb="${i}">${esc(b.label)}</button>`).join("")}</div>`;
+  shBody.querySelectorAll("[data-cb]").forEach(el=>el.addEventListener("click",()=>buttons[+el.dataset.cb].fn()));
+  sheet.classList.add("on");scrim.classList.add("on");
+  shBody.querySelector("[data-cb]").focus();
+}
+// returns true when the course was marked completed directly
+function tryDone(code){
+  if(!requireYear()) return false;
+  const c=BY[code];const yr=parseInt(S.year,10);
+  if(code==="RESMETO"&&yr<3){toast("RESMETO can only be taken from your 3rd year. Check your year in step 1.");return false;}
+  if(needsPick(c.slot)&&!S.pick[code]){
+    openSheet(code);
+    shBody.insertAdjacentHTML("afterbegin",`<div class="msg warn"><b>Choose your ${isGE(c.slot)?"GE elective":"elective"} first.</b> Pick which course you took for ${code} below, then tap Passed.</div>`);
+    const ps=document.getElementById("pickSel");if(ps)ps.focus();
+    return false;
+  }
+  const miss=missingAll(code);
+  if(miss.includes("RESMETO")&&yr<3){toast(`${code} needs RESMETO, which opens in your 3rd year.`);return false;}
+  if(miss.length){
+    confirmSheet(`${code} needs ${listTxt(miss)}`,"Prerequisite check",
+      `<div class="msg note">You can only take <b>${code}</b> after passing <b>${listTxt(miss)}</b>. ${miss.length>1?"These aren't":"This isn't"} ticked yet.</div><p>Did you already pass ${miss.length>1?"them":"it"}?</p>`,
+      [{label:`Yes, mark ${listTxt(miss)} and ${code} as passed`,cls:"primary",fn:()=>{miss.forEach(m=>S.status[m]="done");S.status[code]="done";save();renderAll();closeSheet();toast(`Marked ${listTxt(miss.concat(code))} as passed.`);}},
+       {label:"No, cancel",fn:()=>{closeSheet();toast(`${code} was not ticked. Pass ${listTxt(miss)} first.`);}}]);
+    return false;
+  }
+  S.status[code]="done";save();renderAll();return true;
+}
+// enrolled this term: prerequisites must already be passed (not enrolled at the same time)
+function enrUnits(){return COURSES.filter(c=>S.status[c.code]==="enr").reduce((a,c)=>a+(unitInfo(c)&&unitInfo(c).mp?(unitInfo(c).taken||c.units):c.units),0);}
+function tryEnroll(code){
+  if(!requireYear()) return false;
+  const c=BY[code];const yr=parseInt(S.year,10);
+  if(code==="RESMETO"&&yr<3){toast("RESMETO can only be taken from your 3rd year. Check your year in step 1.");return false;}
+  if(needsPick(c.slot)&&!S.pick[code]){
+    openSheet(code);
+    shBody.insertAdjacentHTML("afterbegin",`<div class="msg warn"><b>Choose the course first.</b> Pick which course you're enrolled in for ${code} below, then tap Enrolled now.</div>`);
+    const ps=document.getElementById("pickSel");if(ps)ps.focus();return false;
+  }
+  const miss=missingAll(code);
+  const same=miss.filter(m=>S.status[m]==="enr");
+  if(same.length){toast(`You can't be enrolled in ${code} and its prerequisite ${listTxt(same)} in the same term.`);return false;}
+  if(miss.includes("RESMETO")&&yr<3){toast(`${code} needs RESMETO, which opens in your 3rd year.`);return false;}
+  const finish=()=>{S.status[code]="enr";save();renderAll();const u=enrUnits();
+    toast(u>24?`${code} marked as currently enrolled. You now have ${u} units this term, above the 24-unit maximum for graduating students; check with your adviser.`:`${code} marked as currently enrolled (${u} units this term).`);};
+  if(miss.length){
+    confirmSheet(`${code} needs ${listTxt(miss)}`,"Prerequisite check",
+      `<div class="msg note">You can only enroll in <b>${code}</b> after passing <b>${listTxt(miss)}</b>. ${miss.length>1?"These aren't":"This isn't"} ticked as passed yet.</div><p>Did you already pass ${miss.length>1?"them":"it"}?</p>`,
+      [{label:`Yes, mark ${listTxt(miss)} as passed and ${code} as enrolled`,cls:"primary",fn:()=>{miss.forEach(m=>S.status[m]="done");closeSheet();finish();}},
+       {label:"No, cancel",fn:()=>{closeSheet();toast(`${code} was not marked. Pass ${listTxt(miss)} first.`);}}]);
+    return false;
+  }
+  finish();return true;
+}
+// returns true when the course was unticked directly
+function tryUndo(code,to){
+  const deps=COURSES.filter(o=>S.status[o.code]==="done"&&o.prereq.includes(code)).map(o=>o.code);
+  const apply=()=>{if(to)S.status[code]=to;else delete S.status[code];save();renderAll();};
+  if(deps.length){
+    confirmSheet(`Untick ${code}?`,"Other courses depend on it",
+      `<div class="msg warn"><b>${listTxt(deps)}</b> ${deps.length>1?"are":"is"} marked passed and ${deps.length>1?"need":"needs"} ${code}. If you untick ${code}, ${deps.length>1?"they":"it"} will be flagged.</div>`,
+      [{label:`Keep ${code} ticked`,cls:"primary",fn:closeSheet},{label:`Untick ${code} anyway`,fn:()=>{apply();closeSheet();}}]);
+    return false;
+  }
+  apply();return true;
+}
+yearsEl.addEventListener("click",ev=>{
+  const btn=ev.target.closest("button[data-act]");if(!btn)return;
+  const code=btn.closest(".tile").dataset.code;
+  if(btn.dataset.act==="toggle"){
+    const ok=S.status[code]==="done"?tryUndo(code):tryDone(code);
+    if(ok){const again=yearsEl.querySelector(`.tile[data-code="${CSS.escape(code)}"] .check`);if(again)again.focus();}
+  }else openSheet(code);
+});
+document.getElementById("enrList").addEventListener("click",ev=>{const b=ev.target.closest(".chip");if(b)openSheet(b.dataset.code);});
+["curSY","curTerm"].forEach(id=>document.getElementById(id).addEventListener("change",ev=>{if(!requireYear()){ev.target.value="";return;}S.cur=S.cur||{};S.cur[id==="curSY"?"sy":"term"]=ev.target.value;save();renderAll();}));
+document.getElementById("nextUp").addEventListener("click",ev=>{const b=ev.target.closest(".chip");if(b)openSheet(b.dataset.code);});
+["mouseover","focusin"].forEach(t=>document.getElementById("nextUp").addEventListener(t,ev=>{const b=ev.target.closest(".chip");yearsEl.querySelectorAll(".tile.hl").forEach(x=>x.classList.remove("hl"));if(b){const tl=yearsEl.querySelector(`.tile[data-code="${CSS.escape(b.dataset.code)}"]`);if(tl)tl.classList.add("hl");}}));
+["mouseout","focusout"].forEach(t=>document.getElementById("nextUp").addEventListener(t,()=>yearsEl.querySelectorAll(".tile.hl").forEach(x=>x.classList.remove("hl"))));
+// section nav: smooth jump, active link, back to top
+(function(){
+  const links=[...document.querySelectorAll("#snin a")];
+  const rm=()=>matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth";
+  links.forEach(a=>a.addEventListener("click",ev=>{ev.preventDefault();const el=document.getElementById(a.dataset.nav);if(el){el.scrollIntoView({behavior:rm(),block:"start"});}}));
+  const setActive=id=>links.forEach(a=>{const on=a.dataset.nav===id;a.classList.toggle("on",on);if(on){a.setAttribute("aria-current","true");a.scrollIntoView({block:"nearest",inline:"center"});}else a.removeAttribute("aria-current");});
+  if("IntersectionObserver" in window){
+    const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting)setActive(e.target.id);});},{rootMargin:"-30% 0px -60% 0px"});
+    links.forEach(a=>{const el=document.getElementById(a.dataset.nav);if(el)io.observe(el);});
+  }
+  const tt=document.getElementById("toTop");
+  window.addEventListener("scroll",()=>{tt.hidden=window.scrollY<700;},{passive:true});
+  tt.addEventListener("click",()=>{window.scrollTo({top:0,behavior:rm()});document.getElementById("stepsH").focus({preventScroll:true});});
+})();
+
+const yearSel=document.getElementById("yearSel");yearSel.value=S.year||"";
+document.getElementById("steplist").addEventListener("click",ev=>{
+  const j=ev.target.closest("[data-jump]");
+  if(j){if(!requireYear())return;const el=document.getElementById(j.dataset.jump);if(el)el.scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"start"});return;}
+  if(ev.target.closest("#stepDl")) document.getElementById("dlBtn").click();
+  if(ev.target.closest("#stepSend")) openSendPlan();
+});
+yearSel.addEventListener("change",()=>{S.year=yearSel.value;save();renderAll();if(S.year)toast("Step 1 done. Next, tick the courses you've passed.");});
+document.getElementById("resetBtn").addEventListener("click",()=>{
+  confirmSheet("Start over?","This can't be undone",
+    `<div class="msg warn">This clears all your ticks, electives, year, name, and ID number saved on this device.</div><p>Tip: download your results first if you want a copy.</p>`,
+    [{label:"Cancel, keep my progress",cls:"primary",fn:closeSheet},
+     {label:"Yes, clear everything",cls:"danger",fn:()=>{S={status:{},pick:{},pick2:{},other:{},year:"",extra:[]};yearSel.value="";save();renderAll();closeSheet();toast("Cleared. Start again from step 1.");}}]);
+});
+
+// summary
+document.getElementById("summaryBtn").addEventListener("click",()=>{
+  const lines=["CIM Flowchart Checker (A.Y. 2025-2026 flowchart, in use for S.Y. 2026-2027)","FOR CHECKING PURPOSES ONLY. Not an official evaluation.",S.year?`Current year: ${yearSel.options[yearSel.selectedIndex].text}`:"",""];
+  const done=COURSES.filter(c=>S.status[c.code]==="done").map(c=>c.code+(S.pick[c.code]?` (${S.pick[c.code]==="OTHER"?S.other[c.code]||"other":S.pick[c.code]}${S.pick2[c.code]?"+"+S.pick2[c.code]:""})`:""));
+  const plan=COURSES.filter(c=>S.status[c.code]==="plan").map(c=>c.code+(S.pick[c.code]?` (${S.pick[c.code]==="OTHER"?S.other[c.code]||"other":S.pick[c.code]}${S.pick2[c.code]?"+"+S.pick2[c.code]:""})`:"")+(whenTxt(c.code)?" - "+whenTxt(c.code):""));
+  const enrL=COURSES.filter(c=>S.status[c.code]==="enr").map(c=>c.code+(S.pick[c.code]&&S.pick[c.code]!=="OTHER"?` (${S.pick[c.code]})`:""));
+  lines.push("Passed: "+(done.join(", ")||"none"),`Currently enrolled${curTxt()?" ("+curTxt()+")":""}: `+(enrL.join(", ")||"none"),"Planned: "+(plan.join(", ")||"none"),"");
+  const eu=COURSES.filter(c=>isAM(c.slot)&&S.pick[c.code]).map(c=>`- ${c.code}: ${unitInfo(c).text}`);
+  if(eu.length) lines.push("Elective units:",eu.join("\n"),"");
+  const wl=WISH_SLOTS.filter(k=>S.status[k]!=="done"&&(S.pick[k]||prefOf(k).some(Boolean))).map(k=>{const w=(S.when||{})[k]||{};return `- ${k}: 1st ${S.pick[k]&&S.pick[k]!=="OTHER"?S.pick[k]:"-"}, 2nd ${prefOf(k)[0]||"-"}, 3rd ${prefOf(k)[1]||"-"}${w.sy&&w.term?" | "+w.sy+", "+w.term:" | when not set"}`;});
+  if(wl.length) lines.push("Elective wish list (order of preference):",wl.join("\n"),"");
+  if((S.extra||[]).length) lines.push("Other Benilde courses passed, outside the flowchart (documentation only, not counted toward the degree):",S.extra.map(x=>`- ${x.code}${x.title?" "+x.title:""}${x.units?" ("+x.units+" units)":""}, ${x.sy}, ${x.term}, passed`).join("\n"),"");
+  const iss=[];COURSES.forEach(c=>evalCourse(c).warns.forEach(w=>iss.push(`- ${c.code}: ${w}`)));
+  lines.push("To check:",iss.length?iss.join("\n"):"- none");
+  const text=lines.filter((l,i)=>l!==""||i>1).join("\n");
+  current=null;lastFocus=document.activeElement;
+  document.getElementById("shTitle").textContent="My plan";
+  document.getElementById("shSub").textContent="Copy this into an email to your adviser.";
+  shBody.innerHTML=`<textarea id="sumTa" readonly>${esc(text)}</textarea><button class="btn primary" id="copyBtn">Copy text</button><p class="mini" id="copyMsg" aria-live="polite"></p>`;
+  sheet.classList.add("on");scrim.classList.add("on");
+  const ta=document.getElementById("sumTa");
+  document.getElementById("copyBtn").addEventListener("click",async()=>{
+    let ok=false;try{await navigator.clipboard.writeText(text);ok=true;}catch(e){try{ta.select();ok=document.execCommand("copy");}catch(e2){}}
+    document.getElementById("copyMsg").textContent=ok?"Copied.":"Couldn't copy automatically. Select the text above and copy it.";
+  });
+  document.getElementById("shClose").focus();
+});
+// let Escape / close work for the summary sheet too
+document.addEventListener("keydown",ev=>{if(ev.key==="Escape"&&sheet.classList.contains("on"))closeSheet();});
+
+// checker
+const chkIn=document.getElementById("chkIn"),chkOut=document.getElementById("checkResult");
+// ---------- course lookup with suggestions and quick actions ----------
+const IDX=(()=>{const m=new Map();
+  COURSES.forEach(c=>m.set(c.code,{code:c.code,title:c.title,flow:c,slots:[]}));
+  for(const k in CHOICES){if(k==="mpAll")continue;CHOICES[k].forEach(x=>{const e=m.get(x[1])||{code:x[1],title:x[2],flow:null,slots:[]};e.slots.push(k);m.set(x[1],e);});}
+  return [...m.values()];})();
+function tagFor(e){
+  if(e.flow){return isAM(e.flow.slot)?["k-slot","ELECTIVE SLOT"]:e.flow.slot&&/^ge/.test(e.flow.slot)?["k-ge","GE SLOT"]:["k-req","REQUIRED"];}
+  const k=kindOf(e.slots[0]);return ["k-"+k,KTAG[k]];
+}
+function hl(t,q){if(!q)return esc(t);const i=t.toLowerCase().indexOf(q.toLowerCase());return i<0?esc(t):esc(t.slice(0,i))+"<mark>"+esc(t.slice(i,i+q.length))+"</mark>"+esc(t.slice(i+q.length));}
+function suggest(q){
+  q=q.trim();if(!q)return [];
+  let Q=q.toUpperCase().replace(/\s/g,"");Q=ALIAS[Q]||Q;const ql=q.toLowerCase();
+  const sc=e=>{const c=e.code.replace("-","");const Qn=Q.replace("-","");
+    if(c===Qn)return 0; if(c.startsWith(Qn))return 1; if(c.includes(Qn))return 2;
+    const t=e.title.toLowerCase(); if(ql.length>=2&&t.split(/[\s:,]+/).some(w=>w.startsWith(ql)))return 3; if(ql.length>=3&&t.includes(ql))return 4; return 9;};
+  return IDX.map(e=>[sc(e),e]).filter(x=>x[0]<9).sort((a,b)=>a[0]-b[0]||a[1].code.localeCompare(b[1].code)).slice(0,8).map(x=>x[1]);
+}
+const chkList=document.getElementById("chkList");let sugg=[],active=-1;
+function renderSugg(){
+  const q=chkIn.value.trim();sugg=suggest(q);active=sugg.length?0:-1;
+  if(!sugg.length){chkList.hidden=true;chkIn.setAttribute("aria-expanded","false");chkIn.removeAttribute("aria-activedescendant");return;}
+  chkList.innerHTML=sugg.map((e,i)=>{const [cls,lab]=tagFor(e);return `<li role="option" id="sg${i}" data-i="${i}" aria-selected="${i===active}"><b>${hl(e.code,q.toUpperCase())}</b><span class="st">${hl(e.title,q)}</span><span class="ktag ${cls}">${lab}</span></li>`;}).join("");
+  chkList.hidden=false;chkIn.setAttribute("aria-expanded","true");chkIn.setAttribute("aria-activedescendant","sg0");
+}
+function setActive(i){active=i;chkList.querySelectorAll("li").forEach((li,j)=>li.setAttribute("aria-selected",String(j===i)));chkIn.setAttribute("aria-activedescendant","sg"+i);const li=document.getElementById("sg"+i);if(li)li.scrollIntoView({block:"nearest"});}
+function closeSugg(){chkList.hidden=true;chkIn.setAttribute("aria-expanded","false");chkIn.removeAttribute("aria-activedescendant");}
+function choose(i){const e=sugg[i];if(!e)return;chkIn.value=e.code;closeSugg();check(e.code);}
+chkIn.addEventListener("input",()=>{renderSugg();clearTimeout(chkIn._t);chkIn._t=setTimeout(()=>check(chkIn.value),220);});
+chkIn.addEventListener("keydown",ev=>{
+  if(chkList.hidden){if(ev.key==="ArrowDown"){renderSugg();ev.preventDefault();}return;}
+  if(ev.key==="ArrowDown"){ev.preventDefault();setActive(Math.min(active+1,sugg.length-1));}
+  else if(ev.key==="ArrowUp"){ev.preventDefault();setActive(Math.max(active-1,0));}
+  else if(ev.key==="Enter"){if(active>=0){ev.preventDefault();choose(active);}}
+  else if(ev.key==="Escape"){ev.preventDefault();closeSugg();}
+});
+chkList.addEventListener("mousedown",ev=>{const li=ev.target.closest("li[data-i]");if(li){ev.preventDefault();choose(+li.dataset.i);}});
+chkIn.addEventListener("blur",()=>setTimeout(closeSugg,120));
+chkIn.addEventListener("focus",()=>{if(chkIn.value.trim())renderSugg();});
+
+function flashEl(el){if(!el)return;el.scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"center"});el.classList.remove("flash");void el.offsetWidth;el.classList.add("flash");setTimeout(()=>el.classList.remove("flash"),1800);}
+function verdictActions(e){
+  const b=[];
+  if(e.flow){
+    const c=e.flow;
+    if(needsPick(c.slot)){
+      b.push(`<button class="btn primary" data-va="open" data-code="${c.code}">Open ${c.code} to choose a course</button>`);
+      b.push(`<button class="btn" data-va="choices">See the approved choices</button>`);
+    } else {
+      b.push(S.status[c.code]==="done"?`<span class="vstate">✓ Marked as passed</span>`:`<button class="btn taken" data-va="tick" data-code="${c.code}">Mark as passed</button>`);
+      if(S.status[c.code]==="enr")b.push(`<span class="vstate" style="color:#3949AB">Currently enrolled</span>`);else if(S.status[c.code]!=="done")b.push(`<button class="btn enrb" data-va="enr" data-code="${c.code}">I'm enrolled in it now</button>`);
+      b.push(`<button class="btn" data-va="open" data-code="${c.code}">Details</button>`);
+    }
+    b.push(`<button class="btn" data-va="show" data-code="${c.code}">Show on flowchart</button>`);
+    return `<div class="vacts">${b.join("")}</div>`;
+  }
+  const code=e.code;const where=whereIs(code);
+  if(e.slots.includes("ge1")) return `<div class="vacts"><span class="vstate">Required as GELECT1 (REEXECO)</span><button class="btn" data-va="show" data-code="REEXECO">Show on flowchart</button></div>`;
+  if(where){const t=where.split(", ")[0];const done=S.status[t]==="done";
+    return `<div class="vacts"><span class="vstate">${done?"✓ Taken":S.status[t]==="enr"?"Enrolled now":"Planned"}: ${where}${!done&&whenTxt(t)?" ("+whenTxt(t)+")":""}</span>${done?"":`<button class="btn taken" data-va="mark" data-code="${t}">Mark as taken</button>`}<button class="btn" data-va="row" data-code="${code}">Show in elective choices</button></div>`;}
+  const groups=e.slots.filter(k=>!(isGE(k)&&S.pick[COURSES.find(x=>x.slot===k).code]));
+  if(!groups.length){const k=e.slots[0];const sc=COURSES.find(x=>x.slot===k).code;return `<div class="vacts"><span class="vstate" style="color:var(--muted)">${sc} already has a course</span><button class="btn" data-va="open" data-code="${sc}">Open ${sc}</button></div>`;}
+  return `<div class="vacts">`+groups.map(k=>`${groups.length>1?`<span class="vlab">As ${SLOT_LABEL[k]}:</span>`:""}<button class="btn taken" data-va="add" data-code="${code}" data-slot="${k}" data-st="done">I've taken it</button><button class="btn enrb" data-va="add" data-code="${code}" data-slot="${k}" data-st="enr">Enrolled now</button><button class="btn" data-va="add" data-code="${code}" data-slot="${k}" data-st="plan">Add to plan</button>`).join("")+`<button class="btn" data-va="row" data-code="${code}">Show in elective choices</button></div>`;
+}
+function check(q){
+  q=q.trim();if(!q){chkOut.innerHTML="";return;}
+  let Q=q.toUpperCase().replace(/\s/g,"");Q=ALIAS[Q]||Q;
+  const exact=IDX.find(e=>e.code.replace("-","")===Q.replace("-",""));
+  const list=exact?[exact]:suggest(q).slice(0,3);
+  if(!list.length){
+    const code=Q.replace(/[^A-Z0-9\-]/g,"").slice(0,12);
+    const rec=(S.extra||[]).filter(x=>x.code===code);
+    chkOut.innerHTML=`<div class="verdict no"><strong>"${esc(q)}" is not on the current CIM flowchart or the approved electives list</strong>It won't be credited toward your CIM degree. Talk to your Academic Adviser before you enroll in it.<div class="small">Check the spelling, or pick from the suggestions as you type.</div>
+      ${rec.length?`<div class="vacts"><span class="vstate">✓ Already recorded in "Other Benilde courses I've passed": ${rec.map(x=>esc(x.sy+", "+x.term)).join("; ")}</span><button class="btn" data-va="viewother">View my list</button></div>`:""}
+      <div class="qform">
+        <p class="qhead"><b>${rec.length?"Passed it in another term too? Record it":"Passed it at Benilde? Record it here for documentation"}</b> <span class="xbadge">Not counted toward your degree</span></p>
+        <div class="qgrid">
+          <div class="field"><label>Course code</label><input type="text" value="${esc(code)}" disabled aria-label="Course code"></div>
+          <div class="field qwide"><label for="qTitle">Course title</label><input id="qTitle" type="text" maxlength="90" placeholder="e.g. Global Communication"></div>
+          <div class="field"><label for="qUnits">Units</label><input id="qUnits" type="text" inputmode="decimal" maxlength="4" placeholder="e.g. 3"></div>
+          <div class="field"><label for="qSY">School year <span class="req" aria-hidden="true">*</span></label><select id="qSY">${document.getElementById("xSY").innerHTML}</select></div>
+          <div class="field"><label for="qTerm">Term <span class="req" aria-hidden="true">*</span></label><select id="qTerm"><option value="">Select term</option><option>Term 1</option><option>Term 2</option><option>Term 3</option></select></div>
+          <div class="field"><label for="qGrade">Did you pass it? <span class="req" aria-hidden="true">*</span></label><select id="qGrade">${document.getElementById("xGrade").innerHTML}</select></div>
+        </div>
+        <div class="vacts"><button class="btn primary" id="qAdd" data-code="${esc(code)}" disabled>Add to "Other Benilde courses I've passed"</button><span class="mini" id="qMsg" aria-live="polite">Choose the school year and term, and confirm you passed.</span></div>
+      </div></div>`;
+    ["qSY","qTerm","qGrade"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});
+    return;}
+  chkOut.innerHTML=list.map(e=>{
+    if(e.flow){const c=e.flow;
+      const msg=needsPick(c.slot)?`This is an elective slot on your flowchart (Term ${c.term}). Fill it with a course from the approved ${SLOT_LABEL[c.slot]} list.`:`This is a required course on your flowchart (Term ${c.term}). It counts toward your degree.`;
+      const [cls,lab]=tagFor(e);
+      return `<div class="verdict req"><strong><span class="ktag ${cls}">${lab}</span> ${c.code} · ${esc(c.title)}</strong>${msg}${verdictActions(e)}</div>`;}
+    const slotTxt=e.slots.map(s=>SLOT_LABEL[s]).join(" or ");
+    let extra="";
+    if(MP[e.code]) extra+=" Music Production electives are 2 units; you need two of them to fill one 3-unit AMELEC.";
+    if(BATCH[e.code]) extra+=" Offered only for CIM students enrolled from AY 2023–2024 onwards.";
+    if(VIA[e.code]) extra+=` ${VIA[e.code]}.`;
+    const kinds=[...new Set(e.slots.map(kindOf))];
+    return `<div class="verdict yes"><strong>${kinds.map(k=>`<span class="ktag k-${k}">${KTAG[k]}</span>`).join(" ")} ${e.code} · ${esc(e.title)}</strong>Counts as ${slotTxt}.${extra}${verdictActions(e)}</div>`;
+  }).join("")+(exact?"":`<p class="mini" style="margin:6px 0 0">Showing the closest matches. Pick one from the suggestions for an exact check.</p>`);
+}
+function qValidate(){
+  const btn=document.getElementById("qAdd");if(!btn)return false;const msg=document.getElementById("qMsg");
+  const u=document.getElementById("qUnits");u.value=u.value.replace(/[^0-9.]/g,"");
+  const sy=document.getElementById("qSY").value,tm=document.getElementById("qTerm").value;
+  const gr=document.getElementById("qGrade").value;
+  let ok=!!(sy&&tm&&gr==="yes"),m=ok?"Ready to add.":"Choose the school year and term, and confirm you passed.";
+  if(gr==="no"){ok=false;m="Only courses you passed can be listed, so this one can't be added. If you need to retake it, talk to your Academic Adviser.";}
+  if(u.value&&!/^\d{1,2}(\.\d)?$/.test(u.value)){ok=false;m="Units should be a number, like 3 or 1.5.";}
+  if(ok&&(S.extra||[]).some(x=>x.code===btn.dataset.code&&x.sy===sy&&x.term===tm)){ok=false;m=`${btn.dataset.code} for ${sy}, ${tm} is already listed.`;}
+  btn.disabled=!ok;msg.textContent=m;msg.style.color=gr==="no"?"var(--warn)":"";msg.style.fontWeight=gr==="no"?"700":"";return ok;
+}
+chkOut.addEventListener("input",ev=>{if(ev.target.closest(".qform"))qValidate();});
+chkOut.addEventListener("change",ev=>{if(ev.target.closest(".qform"))qValidate();});
+chkOut.addEventListener("click",ev=>{
+  const qa=ev.target.closest("#qAdd");
+  if(qa){if(!requireYear()||!qValidate())return;
+    S.extra=S.extra||[];
+    const rec={code:qa.dataset.code,title:document.getElementById("qTitle").value.trim(),units:document.getElementById("qUnits").value.trim(),sy:document.getElementById("qSY").value,term:document.getElementById("qTerm").value,passed:true};
+    S.extra.push(rec);save();renderAll();
+    toast(`${rec.code} added to "Other Benilde courses I've passed" (documentation only).`);return;}
+  if(ev.target.closest('[data-va="viewother"]')){flashEl(document.getElementById("extraSec"));return;}
+  const b=ev.target.closest("[data-va]");if(!b)return;const code=b.dataset.code;const a=b.dataset.va;
+  if(a==="add"){addToPlan(code,b.dataset.slot,b.dataset.st);check(chkIn.value);}
+  else if(a==="mark"){markTaken(code);check(chkIn.value);}
+  else if(a==="enr"){if(tryEnroll(code))check(chkIn.value);}
+  else if(a==="tick"){if(tryDone(code)){toast(`${code} marked as passed.`);check(chkIn.value);}}
+  else if(a==="open"){openSheet(code);}
+  else if(a==="show"){flashEl(yearsEl.querySelector(`.tile[data-code="${CSS.escape(code)}"]`));}
+  else if(a==="row"){flashEl(document.querySelector(`#choiceList li[data-ccode="${CSS.escape(code)}"]`));}
+  else if(a==="choices"){flashEl(document.getElementById("backH"));}
+  else if(a==="other"){if(!requireYear())return;const x=document.getElementById("xCode");x.value=code.replace(/[^A-Z0-9\-]/g,"").slice(0,12);x.dispatchEvent(new Event("input"));flashEl(document.getElementById("extraSec"));setTimeout(()=>document.getElementById("xTitle").focus(),400);toast("Add the title, school year, and term, then tap Add course.");}
+});
+
+// ---------- downloadable PDF of results ----------
+let DL=null;
+(async()=>{try{if(window.claude&&typeof window.claude.use==="function")DL=await window.claude.use("downloads");}catch(e){DL=null;}})();
+const asc=t=>String(t??"").replace(/[–—]/g,"-").replace(/✓/g,"").replace(/·/g,"-").replace(/[“”]/g,'"').replace(/[‘’]/g,"'").replace(/[^\x20-\x7E]/g,"");
+const ST_LBL={done:"Passed",plan:"Planned",open:"Open",lock:"Locked"};
+function noteFor(c,e){
+  const bits=[];
+  const p=S.pick[c.code];
+  if(p){
+    const nm=p==="OTHER"?(S.other[c.code]||"Other course"):p+(S.pick2[c.code]?" + "+S.pick2[c.code]:"");
+    let v="";
+    if(e.slot){v=e.slot.state==="ok"?"counts":e.slot.state==="nocount"?"WON'T COUNT":e.slot.state==="incomplete"?"incomplete":"";}
+    if(isAM(c.slot)){const ui=unitInfo(c);bits.push(ui.mp?ui.text.replace(/\.$/,"")+(v==="incomplete"&&ui.taken===4?" (incomplete)":""):nm+(v?" ("+v+")":""));}
+    else bits.push(nm+(isGE(c.slot)&&v==="WON'T COUNT"?" (WON'T COUNT)":isGE(c.slot)&&v==="counts"?" - "+titleOf(p)+" (counts)":""));
+  } else if(needsPick(c.slot)) bits.push(isGE(c.slot)?"GE elective not chosen yet":"Elective not chosen yet");
+  if(S.status[c.code]==="plan"&&whenTxt(c.code)) bits.push("Planned for "+whenTxt(c.code));
+  if(e.disp==="lock"){ if(e.missing.length) bits.push("Needs "+e.missing.join(", ")); if(e.yearBlock) bits.push("3rd year onwards"); }
+  return bits.join("; ");
+}
+const CAT_RGB={ge:[255,255,255],pe:[230,145,56],nstp:[230,184,175],inst:[106,168,79],core:[255,255,0],major:[109,158,235],prac:[180,167,214],elec:[204,204,204]};
+function drawFlowchartPage(doc){
+  doc.addPage("a4","landscape");
+  const W=doc.internal.pageSize.getWidth(),M=12;
+  const tint=(rgb,k)=>rgb.map(v=>Math.round(v+(255-v)*k));
+  doc.setFont("helvetica","bold");doc.setFontSize(13);doc.setTextColor(0);
+  doc.text("MY FLOWCHART",M,14);
+  doc.setFont("helvetica","normal");doc.setFontSize(8.5);
+  const nP=COURSES.filter(c=>S.status[c.code]==="done").length,nF=COURSES.filter(c=>S.status[c.code]==="fail").length,nL=COURSES.filter(c=>S.status[c.code]==="plan").length;
+  doc.text(asc(`ABCIM, A.Y. 2025-2026 flowchart. Passed: ${nP} courses   Currently enrolled: ${COURSES.filter(c=>S.status[c.code]==="enr").length}   Planned: ${nL}   Not yet passed (to take or retake): ${COURSES.length-nP-nL-COURSES.filter(c=>S.status[c.code]==="enr").length}`),M,19.5);
+  const gap=2.6,top=24,cw=(W-2*M-8*gap)/9,th=15.5,rg=2.4;
+  // year and term headers
+  ["FRESHMAN","SOPHOMORE","JUNIOR"].forEach((yn,i)=>{const x=M+i*3*(cw+gap);const w=3*cw+2*gap;
+    doc.setDrawColor(0);doc.setLineWidth(0.25);doc.rect(x,top,w,5.5);doc.setFont("helvetica","bold");doc.setFontSize(8);doc.text(yn,x+w/2,top+3.9,{align:"center"});
+    for(let k=0;k<3;k++){const tx=M+(i*3+k)*(cw+gap);doc.rect(tx,top+5.5,cw,4.5);doc.setFont("helvetica","normal");doc.text(String(i*3+k+1),tx+cw/2,top+8.7,{align:"center"});}});
+  const gy=top+13;
+  GRID.forEach((row,r)=>row.forEach((code,col)=>{
+    const x=M+col*(cw+gap),y=gy+r*(th+rg);
+    if(code==="~"){doc.setDrawColor(0);doc.setLineWidth(0.3);doc.line(x-gap,y+th/2,x+cw+gap,y+th/2);return;}
+    if(!code)return;
+    const c=BY[code],st=S.status[code],base=CAT_RGB[c.cat];
+    const fill=st==="done"||st==="plan"||st==="enr"?base:tint(base,.6);
+    doc.setFillColor(...fill);doc.setLineDashPattern([],0);
+    if(st==="done"){doc.setDrawColor(14,91,63);doc.setLineWidth(1.1);}
+    else if(st==="enr"){doc.setDrawColor(57,73,171);doc.setLineWidth(1.1);}
+    else if(st==="plan"){doc.setDrawColor(0);doc.setLineWidth(0.5);doc.setLineDashPattern([1.2,0.9],0);}
+    else {doc.setDrawColor(150);doc.setLineWidth(0.25);}
+    doc.rect(x,y,cw,th,"FD");doc.setLineDashPattern([],0);
+    const ink=st==="done"||st==="plan"||st==="enr"?[0,0,0]:[110,110,110];doc.setTextColor(...ink);
+    doc.setFont("helvetica","bold");doc.setFontSize(7.6);doc.text((c.sl?"*":"")+code,x+cw/2,y+4.6,{align:"center"});
+    doc.setFont("helvetica","normal");doc.setFontSize(6.6);doc.text(c.credit?String(c.units):"("+c.units+")",x+cw/2,y+7.8,{align:"center"});
+    const p=S.pick[code];
+    if(p){doc.setFontSize(5.6);doc.text(asc(p==="OTHER"?(S.other[code]||"other"):p+(S.pick2[code]?"+"+S.pick2[code]:"")),x+cw/2,y+10.6,{align:"center",maxWidth:cw-2});}
+    // status label
+    if(st==="done"){doc.setFillColor(14,91,63);doc.rect(x+0.55,y+th-3.9,cw-1.1,3.35,"F");doc.setTextColor(255);doc.setFont("helvetica","bold");doc.setFontSize(5.8);doc.text("PASSED",x+cw/2,y+th-1.45,{align:"center"});}
+    else if(st==="enr"){doc.setFillColor(57,73,171);doc.rect(x+0.55,y+th-3.9,cw-1.1,3.35,"F");doc.setTextColor(255);doc.setFont("helvetica","bold");doc.setFontSize(5.8);doc.text("ENROLLED NOW",x+cw/2,y+th-1.45,{align:"center"});}
+    else if(st==="plan"){doc.setTextColor(0);doc.setFont("helvetica","bold");doc.setFontSize(5.4);doc.text(asc("PLANNED"+(whenTxt(code)?" "+whenTxt(code).replace(", Term "," T").replace(/20(\d\d)[–-]20(\d\d)/,"$1-$2"):"")),x+cw/2,y+th-1.45,{align:"center",maxWidth:cw-1.5});}
+    doc.setTextColor(0);
+  }));
+  // legend
+  let ly=gy+7*(th+rg)+3;
+  doc.setFont("helvetica","bold");doc.setFontSize(8);doc.text("STATUS",M,ly);
+  const sw=(x,label,draw)=>{draw(x,ly+1.5);doc.setTextColor(0);doc.setFont("helvetica","normal");doc.setFontSize(7.5);doc.text(label,x+11,ly+4.6);};
+  let lx=M+16;
+  sw(lx,"Passed",(x,y)=>{doc.setFillColor(109,158,235);doc.setDrawColor(14,91,63);doc.setLineWidth(1);doc.rect(x,y,9,4.5,"FD");});lx+=30;
+  sw(lx,"Currently enrolled",(x,y)=>{doc.setFillColor(109,158,235);doc.setDrawColor(57,73,171);doc.setLineWidth(1);doc.rect(x,y,9,4.5,"FD");});lx+=40;
+  sw(lx,"Planned",(x,y)=>{doc.setFillColor(109,158,235);doc.setDrawColor(0);doc.setLineWidth(0.5);doc.setLineDashPattern([1.2,0.9],0);doc.rect(x,y,9,4.5,"FD");doc.setLineDashPattern([],0);});lx+=30;
+  sw(lx,"Not yet passed: to take or retake (faded)",(x,y)=>{doc.setFillColor(...tint([109,158,235],.6));doc.setDrawColor(150);doc.setLineWidth(0.25);doc.rect(x,y,9,4.5,"FD");});
+  ly+=9;doc.setFont("helvetica","bold");doc.setFontSize(8);doc.text("TYPE",M,ly);
+  lx=M+16;[["ge","General Education"],["core","Core"],["major","Major"],["elec","Elective"],["inst","Institutional"],["pe","PE"],["nstp","NSTP"],["prac","Practicum"]].forEach(([k,l])=>{
+    doc.setFillColor(...CAT_RGB[k]);doc.setDrawColor(0);doc.setLineWidth(0.25);doc.rect(lx,ly-3,6,4,"FD");doc.setFont("helvetica","normal");doc.setFontSize(7.5);doc.text(l,lx+7.5,ly);lx+=7.5+doc.getTextWidth(l)+6;});
+  doc.setFontSize(7);doc.setTextColor(90);doc.text("Only courses marked as passed are shown as PASSED. Courses not yet passed, including retakes, are recorded by the Registrar's Office. Units in parentheses are non-credit. *AMPROJM is a Service Learning course.",M,ly+6);doc.setTextColor(0);
+}
+function buildPDF(){
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({unit:"mm",format:"a4"});
+  const W=doc.internal.pageSize.getWidth(), M=14;
+  const today=new Date();
+  const dstr=today.toLocaleDateString("en-PH",{year:"numeric",month:"long",day:"numeric"});
+  let y=14;
+  doc.setFont("helvetica","bold");doc.setFontSize(16);doc.text("CIM Flowchart Checker",W/2,y,{align:"center"});y+=6;
+  doc.setFont("helvetica","normal");doc.setFontSize(10);doc.text("My Flowchart Check Results (student's own checklist, not an official document)",W/2,y,{align:"center"});y+=4.5;
+  doc.text("For AB Creative Industries Management (CIM) students",W/2,y,{align:"center"});y+=4.5;
+  doc.setFont("helvetica","normal");doc.setFontSize(8.5);
+  doc.text("Based on the A.Y. 2025-2026 flowchart, in use for S.Y. 2026-2027 until further notice",W/2,y,{align:"center"});y+=4;
+  doc.setFontSize(7.5);doc.setTextColor(90);doc.text('CIM Flowchart Checker created by Ms. Valine Mae "Vim" D. Calmerin, MBA, Academic Adviser, AB Creative Industries Management (October 2026)',W/2,y,{align:"center"});doc.setTextColor(0);y+=6;
+
+  // disclaimer box
+  const dText="This document was generated by the CIM Flowchart Checker for planning and checking only. It is NOT an official academic evaluation, transcript, or certificate, and it does not replace enrollment approval. It shows only the courses the student marked as passed; courses not yet passed, including retakes, are recorded by the Registrar's Office. The Registrar's Office makes the official evaluation, and all courses must be approved by your Academic Adviser. For questions, consult your Academic Adviser, Ms. Vim Calmerin (consultations on Mondays by appointment), or the CIM Program Chairperson, Ms. Lara Acuin.";
+  doc.setFontSize(8.5);
+  const dl=doc.splitTextToSize(dText,W-2*M-8);
+  const bh=8+dl.length*3.8;
+  doc.setDrawColor(179,38,30);doc.setLineWidth(0.8);doc.setFillColor(255,246,218);
+  doc.rect(M,y,W-2*M,bh,"FD");
+  doc.setTextColor(179,38,30);doc.setFont("helvetica","bold");doc.setFontSize(11);
+  doc.text("FOR CHECKING PURPOSES ONLY",M+4,y+5.5);
+  doc.setTextColor(0);doc.setFont("helvetica","normal");doc.setFontSize(8.5);
+  doc.text(dl,M+4,y+10);
+  y+=bh+6;
+
+  // student details
+  const yr=S.year?asc(document.getElementById("yearSel").options[document.getElementById("yearSel").selectedIndex].text):"Not indicated";
+  doc.setFontSize(9.5);
+  const info=[["Name",asc(S.name)||"________________________"],["ID number",asc(S.idno)||"____________"],["Current year",yr],["Generated",dstr]];
+  info.forEach(([k,v],i)=>{const x=M+(i%2)*((W-2*M)/2);const yy=y+Math.floor(i/2)*5.5;doc.setFont("helvetica","bold");doc.text(k+":",x,yy);doc.setFont("helvetica","normal");doc.text(v,x+24,yy);});
+  y+=13;
+
+  // summary
+  const credTotal=COURSES.filter(c=>c.credit).reduce((a,c)=>a+c.units,0);
+  let credDone=0,credPlan=0;const issues=[];
+  COURSES.forEach(c=>{const e=evalCourse(c);const ok=!c.slot||!needsPick(c.slot)||e.slot.state==="ok";
+    if(c.credit&&e.st==="done"&&ok)credDone+=c.units; if(c.credit&&e.st==="plan")credPlan+=c.units;
+    e.warns.forEach(w=>issues.push([c.code,asc(w.replace(" Choose the second one below.",""))]));});
+  const nc=COURSES.filter(c=>!c.credit);
+  const am=COURSES.filter(c=>isAM(c.slot));
+  const amOk=am.filter(c=>S.status[c.code]==="done"&&evalCourse(c).slot.state==="ok").length;
+  doc.autoTable({startY:y,theme:"grid",margin:{left:M,right:M},styles:{fontSize:9,cellPadding:1.8},headStyles:{fillColor:[24,33,46]},
+    head:[["Summary","Result"]],
+    body:[["Credited units passed",`${credDone} of ${credTotal}`],["Currently enrolled",(()=>{const n=COURSES.filter(c=>S.status[c.code]==="enr").length;return n?asc(`${n} course${n>1?"s":""}, ${enrUnits()} units`+(curTxt()?` (${curTxt()})`:"")):"None marked";})()],["Credited units planned",String(credPlan)],
+      ["Non-credit requirements passed",`${nc.filter(c=>S.status[c.code]==="done").length} of ${nc.length} (CSBLIFE, NSTP001, NSTP002, CSBGRAD)`],
+      ["Arts Management electives passed and credited",`${amOk} of 6`],
+      ["General Education electives passed and credited",`${["REEXECO","GELECT2","GELECT3"].filter(k=>S.status[k]==="done"&&(k==="REEXECO"||evalCourse(BY[k]).slot.state==="ok")).length} of 3`+asc(" (GELECT1 "+(S.status.REEXECO==="done"?"done":"-")+"; GELECT2 "+(S.pick.GELECT2&&S.pick.GELECT2!=="OTHER"?S.pick.GELECT2:"-")+"; GELECT3 "+(S.pick.GELECT3&&S.pick.GELECT3!=="OTHER"?S.pick.GELECT3:"-")+")")],["Items to check",issues.length?String(issues.length):"None"]],
+    columnStyles:{0:{cellWidth:80,fontStyle:"bold"}}});
+  y=doc.lastAutoTable.finalY+6;
+
+  if(issues.length){
+    doc.autoTable({startY:y,theme:"grid",margin:{left:M,right:M},styles:{fontSize:8.5,cellPadding:1.6},
+      headStyles:{fillColor:[179,38,30]},head:[["Course","Please check with your adviser"]],body:issues,columnStyles:{0:{cellWidth:24,fontStyle:"bold"}}});
+    y=doc.lastAutoTable.finalY+6;
+  }
+
+  // visual flowchart (landscape page)
+  drawFlowchartPage(doc);
+  doc.addPage("a4","portrait");y=18;
+  // elective wish list
+  const wrows=WISH_SLOTS.filter(k=>S.status[k]!=="done"&&(S.pick[k]||prefOf(k).some(Boolean)||((S.when||{})[k]||{}).sy)).map(k=>{const w=(S.when||{})[k]||{};
+    return [k,asc(w.sy?w.sy+(w.term?", "+w.term:""):"Not set"),S.pick[k]&&S.pick[k]!=="OTHER"?S.pick[k]:"-",prefOf(k)[0]||"-",prefOf(k)[1]||"-"];});
+  if(wrows.length){
+    doc.autoTable({startY:y,theme:"grid",margin:{left:M,right:M,top:16,bottom:18},styles:{fontSize:8.5,cellPadding:1.6},
+      headStyles:{fillColor:[14,91,63],textColor:255},
+      head:[[{content:"ELECTIVE WISH LIST (ORDER OF PREFERENCE)",colSpan:5,styles:{halign:"left"}}],["Elective","Planned school year and term","1st choice","2nd choice","3rd choice"]],
+      body:wrows,columnStyles:{0:{cellWidth:22,fontStyle:"bold"}},
+      didParseCell:d=>{if(d.section==="body"&&d.column.index===0){const kk=kindOf((BY[d.cell.raw]||{}).slot);if(kk==="am"){d.cell.styles.fillColor=[74,74,74];d.cell.styles.textColor=255;}if(kk==="ge"){d.cell.styles.fillColor=[15,110,116];d.cell.styles.textColor=255;}}
+        if(d.section==="body"&&d.column.index===1&&d.cell.raw==="Not set"){d.cell.styles.textColor=[179,38,30];}}});
+    y=doc.lastAutoTable.finalY+6;
+  }
+  // completed courses only
+  const sectionHead=(txt,col)=>[[{content:txt,colSpan:5,styles:{halign:"left",fillColor:col,textColor:255}}]];
+  const unitsCell=c=>{const ui=unitInfo(c);return c.credit?(ui&&ui.mp&&ui.taken===4?"3 (4 taken)":ui&&ui.mp?"3 (2 of 4)":String(c.units)):"("+c.units+")";};
+  const doneL=COURSES.filter(c=>S.status[c.code]==="done");
+  const elecNote=c=>{const p=S.pick[c.code];if(!p)return needsPick(c.slot)?"Course not chosen":"";const e=evalCourse(c);
+    const nm=p==="OTHER"?(S.other[c.code]||"Other course"):p+(S.pick2[c.code]?" + "+S.pick2[c.code]:"");
+    const v=e.slot?(e.slot.state==="ok"?"":e.slot.state==="nocount"?" (WON'T COUNT)":e.slot.state==="incomplete"?" (incomplete)":""):"";return asc(nm+v);};
+  const redIfBad=d=>{if(d.section==="body"&&/WON'T COUNT|incomplete|not chosen/i.test(String(d.cell.raw))){d.cell.styles.textColor=[179,38,30];d.cell.styles.fontStyle="bold";}};
+  if(doneL.length){
+    doc.autoTable({startY:y,theme:"grid",margin:{left:M,right:M,top:16,bottom:18},styles:{fontSize:8,cellPadding:1.4},
+      headStyles:{fillColor:[227,242,234],textColor:0},head:[...sectionHead(`PASSED COURSES (${doneL.length})`,[14,91,63]),["Term","Code","Course title","Units","Course taken / notes"]],
+      body:doneL.map(c=>[String(c.term),c.code,asc(c.title),unitsCell(c),elecNote(c)]),
+      columnStyles:{0:{cellWidth:11,halign:"center"},1:{cellWidth:20,fontStyle:"bold"},3:{cellWidth:16,halign:"center"},4:{cellWidth:44}},didParseCell:redIfBad,rowPageBreak:"avoid"});
+    y=doc.lastAutoTable.finalY+5;
+  }
+  // currently enrolled
+  const enrL2=COURSES.filter(c=>S.status[c.code]==="enr");
+  if(enrL2.length){
+    doc.autoTable({startY:y,theme:"grid",margin:{left:M,right:M,top:16,bottom:18},styles:{fontSize:8,cellPadding:1.4},
+      headStyles:{fillColor:[232,234,246],textColor:0},head:[...sectionHead(asc(`CURRENTLY ENROLLED (${enrL2.length} courses, ${enrUnits()} units${curTxt()?", "+curTxt():""})`),[57,73,171]),["Term","Code","Course title","Units","Course / notes"]],
+      body:enrL2.map(c=>[String(c.term),c.code,asc(c.title),unitsCell(c),elecNote(c)]),
+      columnStyles:{0:{cellWidth:11,halign:"center"},1:{cellWidth:20,fontStyle:"bold"},3:{cellWidth:16,halign:"center"},4:{cellWidth:44}},didParseCell:redIfBad,rowPageBreak:"avoid"});
+    y=doc.lastAutoTable.finalY+5;
+  }
+  // planned courses only
+  const planL=COURSES.filter(c=>S.status[c.code]==="plan");
+  if(planL.length){
+    doc.autoTable({startY:y,theme:"grid",margin:{left:M,right:M,top:16,bottom:18},styles:{fontSize:8,cellPadding:1.4},
+      headStyles:{fillColor:[232,236,244],textColor:0},head:[...sectionHead(`PLANNED COURSES (${planL.length})`,[47,95,179]),["Code","Course title","Units","Planned for","Course / notes"]],
+      body:planL.map(c=>[c.code,asc(c.title),unitsCell(c),asc(whenTxt(c.code)||"Not set"),elecNote(c)]),
+      columnStyles:{0:{cellWidth:20,fontStyle:"bold"},2:{cellWidth:16,halign:"center"},3:{cellWidth:30},4:{cellWidth:40}},
+      didParseCell:d=>{redIfBad(d);if(d.section==="body"&&d.column.index===3&&d.cell.raw==="Not set")d.cell.styles.textColor=[179,38,30];},rowPageBreak:"avoid"});
+    y=doc.lastAutoTable.finalY+5;
+  }
+  // still to take, one compact line per term
+  const rest=[];for(let t=1;t<=9;t++){const l=COURSES.filter(c=>c.term===t&&!S.status[c.code]);if(l.length)rest.push([ORD[t-1]+" term",l.map(c=>{const e=evalCourse(c);return c.code+(e.disp==="lock"?" (needs "+(e.missing.join(", ")||"3rd year")+")":"");}).join(", ")]);}
+  if(rest.length){
+    doc.autoTable({startY:y,theme:"grid",margin:{left:M,right:M,top:16,bottom:18},styles:{fontSize:8,cellPadding:1.4},
+      head:[[{content:`STILL TO TAKE OR RETAKE (${COURSES.filter(c=>!S.status[c.code]).length} courses not yet passed, enrolled, or planned)`,colSpan:2,styles:{halign:"left",fillColor:[90,102,118],textColor:255}}]],
+      body:rest,columnStyles:{0:{cellWidth:24,fontStyle:"bold"}},rowPageBreak:"avoid"});
+    y=doc.lastAutoTable.finalY+5;
+  }
+
+  // other courses taken (documentation only)
+  if((S.extra||[]).length){
+    const L=[...S.extra].sort((a,b)=>(a.sy+a.term)<(b.sy+b.term)?-1:1);
+    doc.autoTable({startY:y+2,theme:"grid",margin:{left:M,right:M,top:16,bottom:18},styles:{fontSize:8,cellPadding:1.5},
+      headStyles:{fillColor:[107,91,149],textColor:255},
+      head:[[{content:"OTHER BENILDE COURSES PASSED, OUTSIDE THE FLOWCHART - FOR DOCUMENTATION ONLY (not counted toward the CIM degree)",colSpan:6,styles:{halign:"left",fillColor:[107,91,149]}}],["Code","Course title","Units","School year","Term","Result"]],
+      body:L.map(x=>[asc(x.code),asc(x.title||"-"),asc(x.units||"-"),asc(x.sy),asc(x.term),"Passed"]),
+      columnStyles:{0:{cellWidth:22,fontStyle:"bold"},2:{cellWidth:13,halign:"center"},3:{cellWidth:24},4:{cellWidth:16},5:{cellWidth:30}},rowPageBreak:"avoid"});
+    y=doc.lastAutoTable.finalY+4;
+  }
+  // footer on every page
+  const n=doc.getNumberOfPages();
+  for(let i=1;i<=n;i++){
+    doc.setPage(i);const H=doc.internal.pageSize.getHeight();const W=doc.internal.pageSize.getWidth();
+    doc.setDrawColor(179,38,30);doc.setLineWidth(0.4);doc.line(M,H-13,W-M,H-13);
+    doc.setFontSize(7.5);doc.setTextColor(179,38,30);doc.setFont("helvetica","bold");
+    doc.text("FOR CHECKING PURPOSES ONLY - NOT AN OFFICIAL EVALUATION",M,H-9);
+    doc.setTextColor(80);doc.setFont("helvetica","normal");
+    doc.text(`Page ${i} of ${n}`,W-M,H-9,{align:"right"});
+    doc.text("Questions? Academic Adviser: Ms. Vim Calmerin, valinemae.calmerin@benilde.edu.ph (consultations Mondays by appointment)",M,H-5.5);
+    doc.setTextColor(0);
+  }
+  return doc;
+}
+document.getElementById("dlBtn").addEventListener("click",()=>{
+  current=null;lastFocus=document.activeElement;
+  document.getElementById("shTitle").textContent="Download my results";
+  document.getElementById("shSub").textContent="A PDF you can save, print, or bring to advising.";
+  const nIss=COURSES.reduce((a,c)=>a+evalCourse(c).warns.length,0);
+  const noTicks=!COURSES.some(c=>S.status[c.code]);
+  shBody.innerHTML=`<div class="msg warn"><b>For checking purposes only.</b> The PDF is not an official evaluation. It will say so on every page.</div>
+    ${!S.year?`<div class="msg note"><b>Step 1 isn't done.</b> Choose your current year first so the PDF shows it and the year rules are checked.</div>`:""}
+    ${noTicks?`<div class="msg note"><b>Nothing ticked yet.</b> Complete steps 2 and 3 first, or your PDF will be blank.</div>`:""}
+    ${nIss?`<div class="msg note"><b>${nIss} item${nIss>1?"s":""} still flagged.</b> Your PDF will list ${nIss>1?"them":"it"} under "Please check with your adviser." You can fix ${nIss>1?"them":"it"} first (step 4) or download anyway.</div>`:""}
+    <div class="dlform">
+      <div class="field"><label for="dlName">Your name (optional)</label><input id="dlName" type="text" value="${esc(S.name||"")}" autocomplete="name"></div>
+      <div class="field"><label for="dlId">ID number (optional)</label><input id="dlId" type="text" value="${esc(S.idno||"")}" inputmode="numeric"><p class="help">Saved only on this device, so it's filled in next time.</p></div>
+      <button class="btn primary" id="dlGo">Download PDF</button>
+      <p class="mini" id="dlMsg" aria-live="polite"></p>
+    </div>`;
+  sheet.classList.add("on");scrim.classList.add("on");
+  document.getElementById("dlName").focus();
+  document.getElementById("dlId").addEventListener("input",ev=>{const v=ev.target.value.replace(/\D/g,"");if(v!==ev.target.value)ev.target.value=v;});
+  document.getElementById("dlGo").addEventListener("click",async()=>{
+    const msg=document.getElementById("dlMsg");
+    S.name=document.getElementById("dlName").value.trim();S.idno=document.getElementById("dlId").value.trim();save();
+    if(!window.jspdf||!window.jspdf.jsPDF){msg.textContent="The PDF maker didn't load. Check your connection and reload the page.";return;}
+    if(!S.year){requireYear();closeSheet();return;}
+    let pdfDoc;
+    try{pdfDoc=buildPDF();}catch(e){msg.textContent="Something went wrong while making the PDF. Please reload and try again.";return;}
+    const d=new Date();const stamp=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+    const who=(S.idno||S.name||"").replace(/[^A-Za-z0-9]+/g,"-").replace(/^-|-$/g,"");
+    // on a regular website (outside claude.ai) save straight to the browser's downloads
+    if(!DL){try{pdfDoc.save(`CIM-flowchart-check${who?"-"+who:""}-${stamp}.pdf`);msg.textContent="Saved to your downloads. You can open it and print from there.";S.dlSnap=snap();save();updateSteps();}catch(e){msg.textContent="Downloading isn't available here. Use Copy my plan instead.";}return;}
+    const blob=pdfDoc.output("blob");
+    msg.textContent="Preparing your PDF…";
+    try{await DL.save({filename:`CIM-flowchart-check${who?"-"+who:""}-${stamp}.pdf`,data:blob});msg.textContent="Saved. You can open it and print from there.";S.dlSnap=snap();save();updateSteps();}
+    catch(e){const c=e&&e.code;msg.textContent=c==="declined"?"Download cancelled.":c==="rate_limited"?"A download prompt is already open. Finish that one first.":"Downloading isn't available in this view right now.";}
+  });
+});
+
+renderAll();
+})();
+</script>
+</body>
+</html>
