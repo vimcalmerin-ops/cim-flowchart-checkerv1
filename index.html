@@ -1,14 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<script>
-/* Website version: lets "Download my results (PDF)" save straight to the device when the page runs outside Claude. */
-(function(){ if(window.claude&&typeof window.claude.use==="function") return;
-  window.claude={use:function(name){ if(name!=="downloads") return Promise.resolve(null);
-    return Promise.resolve({save:function(o){ return new Promise(function(res){ var b=o.data instanceof Blob?o.data:new Blob([o.data],{type:(o.mimeType||"application/octet-stream")});
-      var u=URL.createObjectURL(b), a=document.createElement("a"); a.href=u; a.download=o.filename||"download"; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function(){ URL.revokeObjectURL(u); },4000); res({status:"saved"}); }); }}); }};
-})();
-</script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>CIM Flowchart Checker · S.Y. 2026–2027</title>
@@ -256,6 +248,12 @@ textarea{width:100%;min-height:200px;font:inherit;font-size:.85rem;border:1.5px 
 .disclaimer strong{display:block;font-family:var(--display);font-size:1.15rem;line-height:1.2;margin-bottom:2px}
 .disclaimer p{margin:0;max-width:85ch}
 .dlform{display:grid;gap:12px}
+.edisc{background:#FFF6DA;border:1.5px solid #B3261E;border-radius:8px;padding:8px 10px;font-size:.8rem;margin:0 0 12px;color:#18212E}
+.choices .avail,.verdict .avail{display:block;font-size:.68rem;margin-top:1px}
+.avail.ok{color:#0E5B3F} .avail.chk{color:#9A5B00;font-weight:700}
+.plink{font-size:.68rem;font-weight:700;color:#2F5FB3;text-decoration:underline;margin-left:4px;white-space:nowrap}
+.vlinks{display:block;margin-top:4px} .vlinks .plink{font-size:.8rem;margin:0 8px 0 0}
+.vdisc{display:block;font-size:.78rem;color:#9A5B00;margin-top:4px}
 .tile.st-enr{box-shadow:inset 0 0 0 3px #3949AB}
 .tile.k-am.st-enr{box-shadow:inset 0 5px 0 var(--k-am),inset 0 0 0 3px #3949AB} .tile.k-ge.st-enr{box-shadow:inset 0 5px 0 var(--k-ge),inset 0 0 0 3px #3949AB}
 .tile.st-enr .code{font-weight:800}
@@ -513,7 +511,7 @@ a.btn.primary{color:var(--accent-ink)}
         <span class="snum" aria-hidden="true">3</span>
         <div class="sbody">
           <b>Record your electives</b>
-          <p>Under "Choices for electives," tap <b>I've taken it</b> for electives you passed, or <b>Add to plan</b> for ones you want to take. Do this for your AMELECs and your General Education electives (GELECT2 and GELECT3). Then fill in <b>My elective wish list</b> with when you plan to take each remaining elective and your 1st, 2nd, and 3rd choices. Music Production electives are 2 units each, so you need two of them for one AMELEC.</p>
+          <p>Under "Choices for electives," tap <b>I've taken it</b> for electives you passed, or <b>Add to plan</b> for ones you want to take. Do this for your AMELECs and your General Education electives (GELECT2 and GELECT3). Then fill in <b>My elective wish list</b> with when you plan to take each remaining elective and your 1st, 2nd, and 3rd choices. PHILMUS and BUSIMUS are 2 units each, so take both in the same term for one AMELEC.</p>
 <p><b>Not sure an elective will count?</b> Check it first with the <a href="https://docs.google.com/forms/d/e/1FAIpQLSegEyaX00D4mzyHP4hrPz5HWzNFs02gJBER32tWoJ1f4B493A/viewform?usp=header" target="_blank" rel="noopener" style="font-weight:700;text-decoration:underline">CIM Electives Self-Assessment Tool ↗</a> (Google Form by the CIM Program Chairperson).</p>
           <div class="btnrow"><button class="btn jump" data-jump="backH">Go to the elective choices</button><button class="btn jump" data-jump="wishSec">Go to my wish list</button></div>
         </div>
@@ -653,6 +651,7 @@ a.btn.primary{color:var(--accent-ink)}
     <section class="wish" aria-labelledby="wishH" id="wishSec">
       <div class="xhead"><h2 id="wishH">My elective wish list</h2><span class="xbadge" style="background:#0E5B3F">Order of preference</span></div>
       <p class="hint">For each elective you haven't taken yet, choose <b>when</b> you plan to take it and your <b>1st, 2nd, and 3rd choice</b>. Your 1st choice becomes your planned course. Your 2nd and 3rd choices are backups in case your 1st choice isn't offered. This helps the program decide which electives to open each term.</p>
+      <div class="edisc" role="note"><b>Elective disclaimer:</b> Elective offerings, course codes, and units are subject to change based on each program's current curriculum and term offerings. Consult your Academic Adviser before enrolling in any elective.</div>
       <div class="wtop"><p class="mini" id="wishProg" style="margin:0"></p><button class="btn wclrall" id="wishClearAll">Clear my whole wish list</button></div>
       <div id="wishList"></div>
       <div class="wsend"><button class="btn primary" id="wishSend">Send my elective plan to the CIM program</button><span class="mini">Sends your wish list through the program's Google Form.</span></div>
@@ -713,11 +712,11 @@ a.btn.primary{color:var(--accent-ink)}
     </details>
     <details><summary>Electives: what counts</summary>
       <p>AMELEC 1–3 must be about the theory or history of a selected art form or related industries. AMELEC 4–6 must be about the production of a selected art form. Both are free choice with restrictions: only courses on the approved list are credited. They can be taken from SACP, SED, and SNMA.</p>
-      <p>Music Production electives are 2 units each, so two are needed for one AMELEC. AMCURTP, AMINFOA, AMTALEN, AMDIGIT, and AMGASTR are for students enrolled from AY 2023–2024 onwards.</p>
+      <p>In Music Production, WESTMUS, WRLDMUS, and PCOPOMU are 3 units each; PHILMUS and BUSIMUS are 2 units each, offered every term, and must be taken together in the same term to count as one AMELEC. EVENMAN is an elective for the old CIM curriculum only.  AMCURTP, AMINFOA, AMTALEN, AMDIGIT, and AMGASTR are for students enrolled from AY 2023–2024 onwards.</p>
       <p>Not sure an elective will count? Check it with the <a href="https://docs.google.com/forms/d/e/1FAIpQLSegEyaX00D4mzyHP4hrPz5HWzNFs02gJBER32tWoJ1f4B493A/viewform?usp=header" target="_blank" rel="noopener" style="font-weight:700;text-decoration:underline">CIM Electives Self-Assessment Tool ↗</a>.</p>
     </details>
     <details><summary>Course load, overload, and underload</summary>
-      <p>Your regular load is the one on your flowchart (3.6.1). An overload may be allowed for students with excellent academic performance or those graduating at the end of the term, enrolled during the adjustment period only. Graduating students may take up to 24 units (3.6.2).</p>
+      <p>Your regular load is the one on your flowchart (3.6.1). In CIM, an overload is allowed only during your <b>last 2 terms at Benilde</b>, with your Academic Adviser's approval. Overloads are enrolled during the adjustment period, and graduating students may take up to 24 units (3.6.2).</p>
       <p>If you end up underloaded because a course isn't offered, consult your Academic Adviser and, if possible, add units during the adjustment period (3.6.3).</p>
     </details>
     <details><summary>Special classes and cross-enrollment</summary>
@@ -898,8 +897,40 @@ function gradingOf(c){
 }
 const ALIAS={DISMNGT:"DSRMNGT"};
 
-// Approved choices. MP = Music Production (2 units each; two are needed for one AMELEC). B = AY 2023-24 onwards only.
-const MP={WESTMUS:1,PHILMUS:1,WRLDMUS:1,PCOPOMU:1,BUSIMUS:1};
+// Approved choices. MP = the two 2-unit Music Production courses (PHILMUS + BUSIMUS), taken together in the same term for one AMELEC.
+// All other Music Production electives (WESTMUS, WRLDMUS, PCOPOMU) are 3 units. B = AY 2023-24 onwards only.
+const MP={PHILMUS:1,BUSIMUS:1};
+const PAIR={PHILMUS:"BUSIMUS",BUSIMUS:"PHILMUS"};
+const OLDCUR={EVENMAN:"Events Management"};   // old CIM curriculum only
+const ELEC_DISC="The approved elective list is currently being reviewed with the chairpersons of the programs that offer these courses. Some electives may have new course codes, titles, or units, or may no longer be offered. Updates will be posted here once confirmed by the CIM Program Chairperson. Until then, consult your Academic Adviser before enrolling in any elective.";
+const UGP="https://www.benilde.edu.ph/programs/undergraduate-programs/";
+const DEPT_URL={
+  "Dance":[["Performing Arts major in Dance",UGP+"performing-arts-major-in-dance/"]],
+  "Fashion Design and Merchandising":[["Fashion Design and Merchandising",UGP+"fashion-design-and-merchandising/"]],
+  "Film":[["Film",UGP+"film/"]],
+  "Music Production":[["Music Production",UGP+"music-production/"]],
+  "Photography":[["Photography",UGP+"photography/"]],
+  "Production Design":[["Production Design",UGP+"production-design/"]],
+  "Diplomacy, Governance, and International Affairs":[["Diplomacy and International Affairs",UGP+"diplomacy-and-international-affairs/"]],
+  "Arts Management and Creative Industries":[["Creative Industries Management",UGP+"creative-industries-management/"]],
+  "Architecture and Interior Design":[["Architecture",UGP+"architecture/"],["Interior Design",UGP+"interior-design/"]],
+  "Animation":[["Animation",UGP+"animation/"]],
+  "Theater Arts and Production Design":[["Theater Arts",UGP+"theater-arts/"],["Production Design",UGP+"production-design/"]],
+  "Multimedia Arts":[["Multimedia Arts",UGP+"multimedia-arts/"]],
+  "Design Foundation and Fine Arts":[["Undergraduate programs list",UGP]],
+  "Industrial Design":[["Industrial Design",UGP+"industrial-design/"]]
+};
+// what the program's current curriculum says (checked October 2026)
+const AVAIL={
+  WESTMUS:["ok","3 units in Music Production's current curriculum."],
+  WRLDMUS:["ok","3 units in Music Production's current curriculum (a Music Production program elective, so check the term offering)."],
+  PCOPOMU:["ok","3 units in Music Production's current curriculum (a Music Production program elective, so check the term offering)."],
+  PHILMUS:["ok","2 units, offered every term. Take it together with BUSIMUS in the same term."],
+  BUSIMUS:["ok","2 units, offered every term. Take it together with PHILMUS in the same term."],
+  MFEDIGM:["ok","3 units."]
+};
+function deptOf(code){for(const k of ["am13","am46"]){const f=CHOICES[k]&&CHOICES[k].find(x=>x[1]===code);if(f)return f[0];}return "";}
+function deptLinks(dept){const L=DEPT_URL[dept];return L?L.map(([n,u])=>`<a class="plink" href="${u}" target="_blank" rel="noopener noreferrer">${esc(n)} program info ↗</a>`).join(" "):"";}
 const BATCH={AMCURTP:1,AMINFOA:1,AMTALEN:1,AMDIGIT:1,AMGASTR:1};
 const VIA={VOGUING:"Taken via ELECTI4",SOUNDES:"Taken via ELECTI4",LIGHTDS:"Taken via ELECTI4",ROBOTIX:"Taken via IDLEC-1",TECHMAN:"Taken via IDLEC-2",MPROCES:"Taken via IDLEC-2",FSDRWG1:"Equivalent to FREEHAND",FSDRWG2:"Prerequisite: FSDRWG1"};
 const AM13=[
@@ -909,11 +940,10 @@ const AM13=[
 ["Music Production","WESTMUS","History of Western Music"],["Music Production","PHILMUS","Philippine Music"],["Music Production","WRLDMUS","World Music"],["Music Production","PCOPOMU","Philippine Contemporary Popular Music"],
 ["Photography","HISTPHO","History of Photography"],["Photography","LOOKPHO","Looking at Photographs"],["Photography","PHOTREN","Trends in Photography"],["Photography","FILFOTO","Philippine Photography"],
 ["Production Design","INTPROD","Introduction to Production Design"],
-["Diplomacy, Governance, and International Affairs","FOUNDIP","Foundations of Diplomacy"],
-["Arts Management and Creative Industries","EVENMAN","Events Management"]
+["Diplomacy, Governance, and International Affairs","FOUNDIP","Foundations of Diplomacy"]
 ];
 const AM46=[
-["Arts Management and Creative Industries","EVENMAN","Events Management"],["Arts Management and Creative Industries","AMCURTP","Curatorial Practice"],["Arts Management and Creative Industries","AMINFOA","Information and Archival Management"],["Arts Management and Creative Industries","AMTALEN","Talent Management for Artistic and Creative Industries"],["Arts Management and Creative Industries","AMDIGIT","Digital and Interactive Media"],["Arts Management and Creative Industries","AMGASTR","Gastronomy and Creative Industries"],
+["Arts Management and Creative Industries","AMCURTP","Curatorial Practice"],["Arts Management and Creative Industries","AMINFOA","Information and Archival Management"],["Arts Management and Creative Industries","AMTALEN","Talent Management for Artistic and Creative Industries"],["Arts Management and Creative Industries","AMDIGIT","Digital and Interactive Media"],["Arts Management and Creative Industries","AMGASTR","Gastronomy and Creative Industries"],
 ["Architecture and Interior Design","ADESPRN","Architectural Design Elements and Principles"],["Architecture and Interior Design","INDPIPC","Heritage of Philippine Interiors, Preservation, and Conservation"],["Architecture and Interior Design","INDIVISM","Visual Merchandising"],
 ["Animation","SETDSGN","Set Design for Stop Motion"],["Animation","3DSCRIG","3D Sculpting and Rigging"],
 ["Dance","ASIANDA","Asian Dance"],["Dance","VOGUING","Street Dance Voguing"],["Dance","SOUNDES","Sound Design"],["Dance","LIGHTDS","Light Design"],["Dance","MODERN3","Modern 3"],
@@ -959,11 +989,12 @@ function evalSlot(c){
   const out={state:"none",msgs:[]};
   if(!p) return out;
   if(p==="OTHER"){out.state="nocount";out.msgs.push({t:"warn",m:`"${S.other[c.code]||"This course"}" is not on the approved list for ${SLOT_LABEL[c.slot]}. It won't be credited to ${c.code}.`});return out;}
+  if(OLDCUR[p]){out.state="nocount";out.msgs.push({t:"warn",m:`${p} (${OLDCUR[p]}) is an elective for the old CIM curriculum only. It doesn't count under the A.Y. 2025–2026 flowchart. Consult your Academic Adviser.`});return out;}
   out.state="ok";
   if(MP[p]){
     const p2=S.pick2[c.code];
-    if(!p2){out.state="incomplete";out.msgs.push({t:"warn",m:"Music Production electives are only 2 units each. 3 units of AMELEC = 4 units of Music Production, so you need two different Music Production electives (2 + 2 = 4 units). You have 2 of 4 units so far. Choose the second one below."});}
-    else if(!MP[p2]||p2===p){out.state="incomplete";out.msgs.push({t:"warn",m:"The second course must be a different Music Production elective."});}
+    if(!p2){out.state="incomplete";out.msgs.push({t:"warn",m:`${p} is only 2 units. It must be taken together with ${PAIR[p]} (2 units) in the same term; together they count as one 3-unit AMELEC. You have 2 of 4 units so far. Choose ${PAIR[p]} below.`});}
+    else if(p2!==PAIR[p]){out.state="incomplete";out.msgs.push({t:"warn",m:`The second course must be ${PAIR[p]}.`});}
   }
   if(BATCH[p]) out.msgs.push({t:"note",m:`${p} is offered only for CIM students enrolled from AY 2023–2024 onwards (Batch 123 and younger).`});
   if(VIA[p]) out.msgs.push({t:"note",m:`${p}: ${VIA[p]}.`});
@@ -1014,10 +1045,11 @@ function unitInfo(c){
   const p=S.pick[c.code];
   if(!p) return {taken:0,credited:0,short:"",text:"No elective chosen yet: 0 of 3 units."};
   if(p==="OTHER") return {taken:0,credited:0,short:"0/3u",text:"Not on the approved list: 0 of 3 AMELEC units credited."};
+  if(OLDCUR[p]) return {taken:0,credited:0,short:"0/3u",text:`${p} is for the old CIM curriculum only and doesn't count under the current flowchart.`};
   if(MP[p]){
-    const p2=S.pick2[c.code];const ok=!!(p2&&MP[p2]&&p2!==p);
-    return ok?{mp:true,taken:4,credited:3,short:"4u=3",text:`${p} (2 units) + ${p2} (2 units) = 4 Music Production units, credited as 3 AMELEC units.`}
-             :{mp:true,taken:2,credited:0,short:"2/4u",text:`${p} (2 units) = 2 of the 4 Music Production units needed. 0 of 3 AMELEC units credited until you add a second Music Production elective.`};
+    const p2=S.pick2[c.code];const ok=!!(p2&&p2===PAIR[p]);
+    return ok?{mp:true,taken:4,credited:3,short:"4u=3",text:`${p} (2 units) + ${p2} (2 units) = 4 units taken together, credited as 3 AMELEC units.`}
+             :{mp:true,taken:2,credited:0,short:"2/4u",text:`${p} (2 units) = 2 of the 4 units needed. 0 of 3 AMELEC units credited until you add ${PAIR[p]} in the same term.`};
   }
   return {taken:3,credited:3,short:"",text:`${p} (3 units) = 3 AMELEC units.`};
 }
@@ -1082,7 +1114,7 @@ function renderSide(){
   document.getElementById("unitsBig").innerHTML=`${credDone} <small>/ ${credTotal}</small>`;
   document.getElementById("unitsBar").style.width=(credDone/credTotal*100)+"%";
   const nc=COURSES.filter(c=>!c.credit);
-  document.getElementById("unitsMini").textContent=`${credTotal} credited units plus (10) non-credit units make up the program's 168 units. Music Production electives are 2 units each; two (4 units) count as one 3-unit AMELEC. Non-credit requirements done: ${nc.filter(c=>S.status[c.code]==="done").length} of ${nc.length} (CSBLIFE, NSTP001, NSTP002, CSBGRAD).`;
+  document.getElementById("unitsMini").textContent=`${credTotal} credited units plus (10) non-credit units make up the program's 168 units. PHILMUS and BUSIMUS (2 units each) are taken together in the same term and count as one 3-unit AMELEC. Non-credit requirements done: ${nc.filter(c=>S.status[c.code]==="done").length} of ${nc.length} (CSBLIFE, NSTP001, NSTP002, CSBGRAD).`;
   const cats=["major","core","elec","ge","inst","pe","nstp","prac"];
   document.getElementById("catRows").innerHTML=cats.map(k=>{
     const list=COURSES.filter(c=>c.cat===k);
@@ -1126,7 +1158,7 @@ function renderSide(){
 const ORD=["1ST","2ND","3RD","4TH","5TH","6TH","7TH","8TH","9TH"];
 function choiceRow(k,x){
         const code=x[1];const where=whereIs(code);
-        const tags=[];if(MP[code])tags.push("2 units");if(BATCH[code])tags.push("AY 2023–24+");if(VIA[code])tags.push(VIA[code]);
+        const tags=[];if(MP[code])tags.push("2 units · pair with "+PAIR[code]);const av=AVAIL[code];if(BATCH[code])tags.push("AY 2023–24+");if(VIA[code])tags.push(VIA[code]);
         let right;
         if(k==="ge1") right='<span class="in">Required as GELECT1</span>';
         else if(isGE(k)&&S.pick[COURSES.find(x=>x.slot===k).code]&&!where) right=`<span class="in" style="color:#555">${COURSES.find(x=>x.slot===k).code} already filled</span>`;
@@ -1134,7 +1166,7 @@ function choiceRow(k,x){
           const wt=!done&&!enr?whenTxt(t):"";
           right=`<span class="acts"><span class="in">${done?"✓ Taken":enr?"Enrolled now":"Planned"}: ${where}${wt?` <span style="font-weight:400">(${wt})</span>`:(!done&&!enr?' <span style="font-weight:400;color:#B3261E">(set when)</span>':"")}</span>${done?"":`<button class="add taken" data-mark="${t}">Mark as taken</button>`}<button class="rm" data-remove="${code}" data-from="${t}" aria-label="Remove ${code} from ${t}">Remove</button></span>`;}
         else right=`<span class="acts"><button class="add taken" data-add="${code}" data-slot="${k}" data-st="done">I've taken it</button><button class="add enr" data-add="${code}" data-slot="${k}" data-st="enr">Enrolled now</button><button class="add" data-add="${code}" data-slot="${k}" data-st="plan">Add to plan</button></span>`;
-        return `<li data-ccode="${code}"><span class="nm"><b>${code}</b> ${esc(x[2])}${tags.length?`<span class="tag">${esc(tags.join(" · "))}</span>`:""}</span>${right}</li>`;
+        return `<li data-ccode="${code}"><span class="nm"><b>${code}</b> ${esc(x[2])}${tags.length?`<span class="tag">${esc(tags.join(" · "))}</span>`:""}${av?`<span class="avail ${av[0]}">${av[0]==="ok"?"✓ ":"⚠ "}${esc(av[1])}</span>`:""}</span>${right}</li>`;
 }
 function renderBack(){
   let h="";
@@ -1179,12 +1211,12 @@ function renderBack(){
     const by={};CHOICES[k].forEach(x=>{(by[x[0]]=by[x[0]]||[]).push(x);});
     const showDept=isAM(k);
     for(const d in by){
-      if(showDept) c2+=`<h4>${esc(d)}${d==="Music Production"?" (2 units each; take two for one AMELEC)":""}</h4>`;
+      if(showDept) c2+=`<h4>${esc(d)}${d==="Music Production"?" (PHILMUS + BUSIMUS: 2 units each, same term, one AMELEC)":""} ${deptLinks(d)}</h4>`;
       c2+="<ul>"+by[d].map(x=>choiceRow(k,x)).join("")+"</ul>";
     }
   });
   if(curK){ if(curK==="am") c2+=bacim(); c2+="</div></section>"; }
-  document.getElementById("choiceList").innerHTML=c2;
+  document.getElementById("choiceList").innerHTML=`<div class="edisc" role="note"><b>Elective disclaimer:</b> ${esc(ELEC_DISC)}</div>`+c2;
 }
 function whereIs(code){
   const hits=COURSES.filter(c=>S.pick[c.code]===code||S.pick2[c.code]===code).map(c=>c.code);
@@ -1197,7 +1229,7 @@ function addToPlan(code,slot,status){
   const slots=COURSES.filter(c=>c.slot===slot);
   // a Music Production course can complete a slot that is waiting for its second course
   let target=null,second=false;
-  if(MP[code]) {target=COURSES.find(c=>isAM(c.slot)&&MP[S.pick[c.code]]&&!S.pick2[c.code]&&S.pick[c.code]!==code); second=!!target;}
+  if(MP[code]) {target=COURSES.find(c=>isAM(c.slot)&&S.pick[c.code]===PAIR[code]&&!S.pick2[c.code]); second=!!target;}
   if(!target) target=slots.find(c=>!S.pick[c.code]);
   if(!target){msg.style.color="#B3261E";msg.textContent=`All ${SLOT_LABEL[slot]} slots already have a course. Tap a slot on the flowchart to change it.`;return;}
   if(second) S.pick2[target.code]=code; else S.pick[target.code]=code;
@@ -1206,7 +1238,7 @@ function addToPlan(code,slot,status){
   save();renderAll();
   msg.style.color="#0E5B3F";
   const verb=status==="done"?"recorded as taken":status==="enr"?"recorded as currently enrolled":"added to your plan";
-  msg.textContent=second?`${code} ${verb} as the second Music Production course for ${target.code}.${status==="done"&&S.status[target.code]==="plan"?" The first course is still planned, so the slot stays Planned until you mark it taken.":""}`
+  msg.textContent=second?`${code} ${verb} as the paired course for ${target.code}.${status==="done"&&S.status[target.code]==="plan"?" The first course is still planned, so the slot stays Planned until you mark it taken.":""}`
     :`${code} ${verb} for ${target.code}.${MP[code]?" Add one more Music Production elective to complete this slot.":""}`;
   if(status==="plan"&&!whenTxt(target.code)){openSheet(target.code);shBody.insertAdjacentHTML("afterbegin",`<div class="msg ok"><b>${code} added to your plan as ${target.code}.</b> Now choose when you plan to take it.</div>`);const f=document.getElementById("planSY");if(f)f.focus();}
 }
@@ -1514,6 +1546,10 @@ function fillSheet(){
      ${CMAP[c.code]?`<dt>Program outcomes</dt><dd>${CMAP[c.code].split("").map(n=>"PO"+n).join(", ")}</dd>`:""}</dl>`;
   if(CMAP[c.code]) h+=`<details class="podet"><summary>What these outcomes mean</summary><ul>${CMAP[c.code].split("").map(n=>`<li><b>PO${n}.</b> ${esc(POS["PO"+n])}.</li>`).join("")}</ul></details>`;
   if(c.slot==="am13") h+=`<div class="msg note">AMELEC 1–3 must be about the theory or history of a selected art form or related industries. Free choice, but only from the approved list.</div>`;
+  if(needsPick(c.slot)){const pk=S.pick[c.code];const dp=pk&&pk!=="OTHER"?deptOf(pk):"";const av=pk?AVAIL[pk]:null;
+    h+=`<div class="msg warn"><b>Elective disclaimer:</b> ${esc(ELEC_DISC)}</div>`;
+    if(av) h+=`<div class="msg ${av[0]==="ok"?"ok":"note"}">${av[0]==="ok"?"✓ ":"⚠ "}${esc(pk)}: ${esc(av[1])}</div>`;
+    if(dp&&DEPT_URL[dp]) h+=`<div class="msg note">Course offered by ${esc(dp)}: ${deptLinks(dp)}</div>`;}
   if(isGE(c.slot)) h+=`<div class="msg note">${c.code} is a General Education elective. Choose one of the listed courses only: ${CHOICES[c.slot].map(x=>x[1]+" ("+x[2]+")").join(" or ")}. Any other course won't count.</div>`;
   if(c.slot==="am46") h+=`<div class="msg note">AMELEC 4–6 must be about the production of a selected art form. Free choice, but only from the approved list.</div>`;
   if(NOTES[c.code]) h+=`<div class="msg note">${NOTES[c.code]}</div>`;
@@ -1524,7 +1560,7 @@ function fillSheet(){
       <p class="help">Approved for ${SLOT_LABEL[c.slot]}.</p></div>`;
     if(p) h+=`<button class="btn rmbtn" id="clearSlot">Remove ${esc(p==="OTHER"?(S.other[c.code]||"this course"):p+(S.pick2[c.code]?" + "+S.pick2[c.code]:""))} from ${c.code}</button>`;
     if(p==="OTHER") h+=`<div class="field"><label for="otherIn">Course code or title</label><input id="otherIn" type="text" value="${esc(S.other[c.code]||"")}" placeholder="e.g. a course from another program"></div>`;
-    if(MP[p]) h+=`<div class="field"><label for="pick2Sel">Second Music Production elective</label><select id="pick2Sel">${optionsHTML("mpAll",S.pick2[c.code]||"",true,c.code,p)}</select><p class="help">Two 2-unit Music Production electives fill one 3-unit AMELEC.</p></div>`;
+    if(MP[p]) h+=`<div class="field"><label for="pick2Sel">Paired course (same term)</label><select id="pick2Sel">${optionsHTML("mpAll",S.pick2[c.code]||"",true,c.code,p)}</select><p class="help">PHILMUS and BUSIMUS (2 units each) are taken together in the same term and count as one 3-unit AMELEC.</p></div>`;
     if(e.slot) e.slot.msgs.forEach(m=>{h+=`<div class="msg ${m.t}">${esc(m.m)}</div>`;});
     const ui=unitInfo(c);
     if(ui&&S.pick[c.code]) h+=`<div class="msg ${ui.credited?"ok":"warn"}"><b>Units:</b> ${esc(ui.text)}${ui.credited?(e.st==="done"?` Counted toward ${c.code}.`:` This will count toward ${c.code} once passed.`):""}</div>`;
@@ -1811,6 +1847,7 @@ function verdictActions(e){
 function check(q){
   q=q.trim();if(!q){chkOut.innerHTML="";return;}
   let Q=q.toUpperCase().replace(/\s/g,"");Q=ALIAS[Q]||Q;
+  if(OLDCUR[Q]){chkOut.innerHTML=`<div class="verdict no"><strong>${Q} · ${esc(OLDCUR[Q])}: old CIM curriculum only</strong>${Q} is an elective for the old CIM curriculum. It doesn't count under the A.Y. 2025–2026 flowchart. Consult your Academic Adviser before enrolling.</div>`;return;}
   const exact=IDX.find(e=>e.code.replace("-","")===Q.replace("-",""));
   const list=exact?[exact]:suggest(q).slice(0,3);
   if(!list.length){
@@ -1839,9 +1876,13 @@ function check(q){
       return `<div class="verdict req"><strong><span class="ktag ${cls}">${lab}</span> ${c.code} · ${esc(c.title)}</strong>${msg}${verdictActions(e)}</div>`;}
     const slotTxt=e.slots.map(s=>SLOT_LABEL[s]).join(" or ");
     let extra="";
-    if(MP[e.code]) extra+=" Music Production electives are 2 units; you need two of them to fill one 3-unit AMELEC.";
+    if(MP[e.code]) extra+=` ${e.code} is 2 units: take it with ${PAIR[e.code]} in the same term; together they count as one 3-unit AMELEC.`;
     if(BATCH[e.code]) extra+=" Offered only for CIM students enrolled from AY 2023–2024 onwards.";
     if(VIA[e.code]) extra+=` ${VIA[e.code]}.`;
+    const dpt=deptOf(e.code);const avv=AVAIL[e.code];
+    if(avv) extra+=` <span class="avail ${avv[0]}">${avv[0]==="ok"?"✓ ":"⚠ "}${esc(avv[1])}</span>`;
+    if(dpt&&DEPT_URL[dpt]) extra+=`<span class="vlinks">${deptLinks(dpt)}</span>`;
+    if(isAM(e.slots[0])) extra+=`<span class="vdisc">${esc(ELEC_DISC)}</span>`;
     const kinds=[...new Set(e.slots.map(kindOf))];
     return `<div class="verdict yes"><strong>${kinds.map(k=>`<span class="ktag k-${k}">${KTAG[k]}</span>`).join(" ")} ${e.code} · ${esc(e.title)}</strong>Counts as ${slotTxt}.${extra}${verdictActions(e)}</div>`;
   }).join("")+(exact?"":`<p class="mini" style="margin:6px 0 0">Showing the closest matches. Pick one from the suggestions for an exact check.</p>`);
@@ -1966,7 +2007,7 @@ function buildPDF(){
   doc.setFontSize(7.5);doc.setTextColor(90);doc.text('CIM Flowchart Checker created by Ms. Valine Mae "Vim" D. Calmerin, MBA, Academic Adviser, AB Creative Industries Management (October 2026)',W/2,y,{align:"center"});doc.setTextColor(0);y+=6;
 
   // disclaimer box
-  const dText="This document was generated by the CIM Flowchart Checker for planning and checking only. It is NOT an official academic evaluation, transcript, or certificate, and it does not replace enrollment approval. It shows only the courses the student marked as passed; courses not yet passed, including retakes, are recorded by the Registrar's Office. The Registrar's Office makes the official evaluation, and all courses must be approved by your Academic Adviser. For questions, consult your Academic Adviser, Ms. Vim Calmerin (consultations on Mondays by appointment), or the CIM Program Chairperson, Ms. Lara Acuin.";
+  const dText="This document was generated by the CIM Flowchart Checker for planning and checking only. It is NOT an official academic evaluation, transcript, or certificate, and it does not replace enrollment approval. It shows only the courses the student marked as passed; courses not yet passed, including retakes, are recorded by the Registrar's Office. The Registrar's Office makes the official evaluation, and all courses must be approved by your Academic Adviser. Elective offerings, course codes, and units are subject to change; consult your Academic Adviser before enrolling in any elective. For questions, consult your Academic Adviser, Ms. Vim Calmerin (consultations on Mondays by appointment), or the CIM Program Chairperson, Ms. Lara Acuin.";
   doc.setFontSize(8.5);
   const dl=doc.splitTextToSize(dText,W-2*M-8);
   const bh=8+dl.length*3.8;
@@ -2022,7 +2063,8 @@ function buildPDF(){
       body:wrows,columnStyles:{0:{cellWidth:22,fontStyle:"bold"}},
       didParseCell:d=>{if(d.section==="body"&&d.column.index===0){const kk=kindOf((BY[d.cell.raw]||{}).slot);if(kk==="am"){d.cell.styles.fillColor=[74,74,74];d.cell.styles.textColor=255;}if(kk==="ge"){d.cell.styles.fillColor=[15,110,116];d.cell.styles.textColor=255;}}
         if(d.section==="body"&&d.column.index===1&&d.cell.raw==="Not set"){d.cell.styles.textColor=[179,38,30];}}});
-    y=doc.lastAutoTable.finalY+6;
+    y=doc.lastAutoTable.finalY+4;
+    doc.setFontSize(7.5);doc.setTextColor(179,38,30);const dl2=doc.splitTextToSize(asc("Elective disclaimer: "+ELEC_DISC),W-2*M);doc.text(dl2,M,y+2);doc.setTextColor(0);y+=4+dl2.length*3.4;
   }
   // completed courses only
   const sectionHead=(txt,col)=>[[{content:txt,colSpan:5,styles:{halign:"left",fillColor:col,textColor:255}}]];
@@ -2122,7 +2164,7 @@ document.getElementById("dlBtn").addEventListener("click",()=>{
     // on a regular website (outside claude.ai) save straight to the browser's downloads
     if(!DL){try{pdfDoc.save(`CIM-flowchart-check${who?"-"+who:""}-${stamp}.pdf`);msg.textContent="Saved to your downloads. You can open it and print from there.";S.dlSnap=snap();save();updateSteps();}catch(e){msg.textContent="Downloading isn't available here. Use Copy my plan instead.";}return;}
     const blob=pdfDoc.output("blob");
-    msg.textContent="Preparing your PDF…";
+    msg.textContent="Confirm the download in the prompt.";
     try{await DL.save({filename:`CIM-flowchart-check${who?"-"+who:""}-${stamp}.pdf`,data:blob});msg.textContent="Saved. You can open it and print from there.";S.dlSnap=snap();save();updateSteps();}
     catch(e){const c=e&&e.code;msg.textContent=c==="declined"?"Download cancelled.":c==="rate_limited"?"A download prompt is already open. Finish that one first.":"Downloading isn't available in this view right now.";}
   });
